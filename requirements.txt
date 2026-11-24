@@ -1,0 +1,8 @@
+streamlit
+pyswisseph
+libephemeris
+geonamescache
+timezonefinder
+pytz
+pandas
+supabase

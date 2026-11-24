@@ -1,0 +1,5025 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>اسأل استرو رادار</title>
+<meta name="description" content="وكيل ذكاء اصطناعي متخصص بتحليل الخارطة السنوية (العودة الشمسية) وفق التنجيم الغربي">
+<style>
+/* اسأل استرو رادار - الأنماط */
+:root {
+  --paper: #edf1ee;
+  --panel: #fafcfa;
+  --ink: #0d2b31;
+  --ink-soft: #4a6168;
+  --line: #c5d2cc;
+  --teal: #138a94;
+  --teal-deep: #0b5d66;
+  --signal: #e9a820;
+  --signal-deep: #8a5d00;
+  --plum: #7b2d5f;
+  --err: #b3261e;
+  --radius: 10px;
+  --font: "Segoe UI", "Noto Sans Arabic", "Geeza Pro", "SF Arabic", Tahoma, system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--font); font-size: 17px; line-height: 1.75;
+}
+:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+.wrap { width: min(100% - 32px, 980px); margin-inline: auto; }
+
+/* ---------- الواجهة العلوية ---------- */
+.hero { background: var(--ink); color: #eaf3f1; padding: 36px 0 28px; overflow: hidden; }
+.hero .wrap { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.hero h1 { margin: 0; font-size: clamp(2.4rem, 7vw, 4rem); font-weight: 900; line-height: 1.15; letter-spacing: 0; }
+.hero .byline { margin: 10px 0 0; color: #9fc3c4; font-size: 1.05rem; max-width: 30ch; }
+.dial { width: min(78vw, 300px); height: auto; flex: none; }
+.dial .ring { fill: none; stroke: #2f5a60; stroke-width: 1; }
+.dial .tick { stroke: #2f5a60; stroke-width: 1; }
+.dial .glyph { fill: #8fd0d3; font-size: 15px; text-anchor: middle; dominant-baseline: central; font-family: "Segoe UI Symbol", "Noto Sans Symbols", var(--font); }
+.dial .blip { fill: var(--signal); }
+.sweep { transform-origin: 160px 160px; animation: spin 9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .sweep { animation: none; } }
+
+/* ---------- رسالة الترحيب ---------- */
+.agent { margin: 28px 0 8px; display: flex; gap: 14px; align-items: flex-start; }
+.agent .avatar { flex: none; width: 46px; height: 46px; border-radius: 50%; background: var(--teal-deep); display: grid; place-items: center; }
+.agent .avatar svg { width: 28px; height: 28px; }
+.bubble { background: var(--panel); border: 1px solid var(--line); border-radius: 4px var(--radius) var(--radius) var(--radius); padding: 14px 18px; font-size: 1.08rem; }
+.bubble small { display: block; margin-top: 6px; color: var(--ink-soft); font-size: .92rem; }
+
+/* ---------- نموذج الإدخال ---------- */
+.console { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); margin: 16px 0 40px; }
+fieldset { border: 0; border-bottom: 1px solid var(--line); margin: 0; padding: 22px 24px 24px; }
+fieldset:last-of-type { border-bottom: 0; }
+legend { float: right; width: 100%; padding: 0; margin: 0 0 14px; font-size: 1.15rem; font-weight: 800; color: var(--teal-deep); }
+legend + * { clear: both; }
+.grid { display: grid; gap: 16px 18px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field > label, .field > .lbl { font-weight: 700; font-size: .98rem; }
+input[type=text], select {
+  font: inherit; color: var(--ink); background: #fff; width: 100%; min-height: 46px;
+  border: 1.5px solid #9db0a9; border-radius: 8px; padding: 8px 12px;
+}
+select:disabled { background: #e6ece8; color: #7c8e88; }
+input[type=text]:focus, select:focus { border-color: var(--teal); }
+.row3 { display: grid; grid-template-columns: 1fr 1.6fr 1.1fr; gap: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { position: relative; }
+.chip input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.chip span {
+  display: inline-block; min-height: 46px; padding: 9px 20px; border: 1.5px solid #9db0a9; border-radius: 999px;
+  background: #fff; font-weight: 600; cursor: pointer; line-height: 1.8;
+}
+.chip input:checked + span { background: var(--teal-deep); border-color: var(--teal-deep); color: #fff; }
+.chip input:focus-visible + span { outline: 3px solid var(--signal); outline-offset: 2px; }
+.timebox { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; }
+.timebox .field { width: 120px; }
+.check { display: inline-flex; align-items: center; gap: 10px; min-height: 46px; font-weight: 700; cursor: pointer; }
+.check input { width: 22px; height: 22px; accent-color: var(--teal-deep); }
+.hint { margin: 10px 0 0; color: var(--ink-soft); font-size: .93rem; }
+.actions { padding: 20px 24px 26px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; border-top: 1px solid var(--line); }
+.btn {
+  font: inherit; font-weight: 800; min-height: 50px; padding: 10px 30px; border-radius: 8px; cursor: pointer;
+  border: 2px solid var(--teal-deep); background: var(--teal-deep); color: #fff; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+}
+.btn:hover { background: var(--ink); border-color: var(--ink); }
+.btn.alt { background: transparent; color: var(--teal-deep); }
+.btn.alt:hover { background: var(--teal-deep); color: #fff; }
+.errors { margin: 0; padding: 12px 18px; background: #fdecea; color: var(--err); border-inline-start: 5px solid var(--err); border-radius: 6px; font-weight: 600; }
+.errors[hidden] { display: none; }
+.errors ul { margin: 0; padding-inline-start: 18px; }
+.field.bad input, .field.bad select { border-color: var(--err); }
+
+/* ---------- النتيجة ---------- */
+#result { margin-bottom: 60px; }
+.report-head { border-block-end: 3px solid var(--ink); padding-bottom: 14px; margin-bottom: 20px; }
+.report-head h2 { margin: 0; font-size: clamp(1.6rem, 4.5vw, 2.3rem); font-weight: 900; line-height: 1.35; }
+.report-head p { margin: 4px 0 0; color: var(--ink-soft); }
+.facts { display: grid; gap: 0; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); overflow: hidden; margin-bottom: 18px; }
+.fact { padding: 12px 16px; border-inline-start: 1px solid var(--line); }
+.fact:first-child { border-inline-start: 0; }
+.fact b { display: block; font-size: .88rem; color: var(--ink-soft); font-weight: 600; }
+.fact span { font-weight: 800; font-size: 1.12rem; }
+.summary p { margin: 0 0 8px; max-width: 70ch; }
+.chartzone { display: grid; gap: 22px; grid-template-columns: minmax(280px, 460px) 1fr; align-items: start; margin: 24px 0 8px; }
+@media (max-width: 760px) { .chartzone { grid-template-columns: 1fr; } }
+.wheel { width: 100%; height: auto; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+.wheel text { font-family: "Segoe UI Symbol", "Noto Sans Symbols", var(--font); }
+table.pl { width: 100%; border-collapse: collapse; font-size: .98rem; background: var(--panel); border: 1px solid var(--line); }
+table.pl th, table.pl td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--line); }
+table.pl th { background: #dfe8e3; font-weight: 700; }
+table.pl tr:last-child td { border-bottom: 0; }
+.rx { color: var(--plum); font-weight: 800; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 10px 0 0; font-size: .9rem; color: var(--ink-soft); }
+.legend i { display: inline-block; width: 22px; height: 0; border-top: 3px solid; vertical-align: middle; margin-inline-end: 6px; }
+
+.block { margin-top: 34px; }
+.block h3 { margin: 0 0 4px; font-size: 1.5rem; font-weight: 900; }
+.block .sub { margin: 0 0 14px; color: var(--ink-soft); font-size: .95rem; }
+.block ol { list-style: none; margin: 0; padding: 0; counter-reset: n; }
+.block li { counter-increment: n; position: relative; padding: 12px 58px 12px 14px; margin-bottom: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); max-width: 78ch; break-inside: avoid; }
+.block li::before {
+  content: counter(n); position: absolute; right: 12px; top: 12px; width: 32px; height: 32px; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 800; font-size: .95rem; color: #fff; background: var(--c);
+}
+.events { --c: var(--teal-deep); }
+.advice { --c: var(--signal-deep); }
+.warnings { --c: var(--plum); }
+.events li { border-inline-start: 5px solid var(--teal); }
+.advice li { border-inline-start: 5px solid var(--signal); }
+.warnings li { border-inline-start: 5px solid var(--plum); }
+.note { margin-top: 28px; padding: 12px 16px; border: 1px dashed #8aa09a; border-radius: var(--radius); color: var(--ink-soft); font-size: .93rem; max-width: 78ch; }
+.result-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 26px; }
+footer { padding: 24px 0 36px; color: var(--ink-soft); font-size: .9rem; text-align: center; border-top: 1px solid var(--line); }
+
+/* ---------- الطباعة ---------- */
+.print-only { display: none; }
+@media print {
+  @page { size: A4; margin: 14mm; }
+  body { background: #fff; font-size: 12.5pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .hero, .agent, .console, .result-actions, footer, #errors { display: none !important; }
+  .print-only { display: block; text-align: center; font-weight: 900; font-size: 15pt; margin-bottom: 10px; color: var(--teal-deep); }
+  #result { margin: 0; }
+  .wrap { width: 100%; }
+  .block { margin-top: 18px; }
+  .block h3, .block .sub { break-after: avoid; }
+  .block li, .facts, .wheel, table.pl { break-inside: avoid; }
+  .chartzone { grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .wheel { max-height: 92mm; }
+  table.pl { font-size: 9.5pt; }
+  table.pl th, table.pl td { padding: 2px 6px; }
+  .legend { font-size: 8.5pt; gap: 8px; }
+  .fact { padding: 6px 10px; }
+  .report-head h2 { font-size: 20pt; }
+  .block li { padding: 8px 52px 8px 10px; margin-bottom: 6px; font-size: 11.5pt; line-height: 1.6; }
+  .block li::before { top: 8px; }
+}
+
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <h1>اسأل استرو رادار</h1>
+      <p class="byline">تحليل الخارطة السنوية بنظام كل برج بيت</p>
+    </div>
+    <svg class="dial" id="dial" viewBox="0 0 320 320" role="img" aria-label="قرص رادار تدور فوقه الأبراج"></svg>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="agent" aria-label="رسالة الترحيب">
+    <div class="avatar" aria-hidden="true">
+      <svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="none" stroke="#bfe6e8" stroke-width="1.5"/><circle cx="14" cy="14" r="6" fill="none" stroke="#bfe6e8" stroke-width="1.5"/><path d="M14 14 L24 8" stroke="#e9a820" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </div>
+    <div class="bubble">
+      مرحباً بكم، أنا وكيل الذكاء الاصطناعي «اسأل استرو رادار» المصمم من قبل الفلكي استرو رادار، وأنا مختص فقط بتحليل خارطتك السنوية لأستخرج أهم التوقعات بها.
+      <small>أقبل الحقول أدناه فقط، ولا أجيب عن أي سؤال خارج نطاق الخارطة السنوية.</small>
+    </div>
+  </section>
+
+  <form class="console" id="form" novalidate autocomplete="off">
+
+    <fieldset>
+      <legend>بياناتك</legend>
+      <div class="grid">
+        <div class="field" id="f-name">
+          <label for="name">الاسم</label>
+          <input type="text" id="name" maxlength="30" inputmode="text">
+        </div>
+        <div class="field" id="f-gender">
+          <span class="lbl" id="gender-lbl">الجنس</span>
+          <div class="chips" role="radiogroup" aria-labelledby="gender-lbl">
+            <label class="chip"><input type="radio" name="gender" value="m"><span>ذكر</span></label>
+            <label class="chip"><input type="radio" name="gender" value="f"><span>أنثى</span></label>
+          </div>
+        </div>
+      </div>
+      <div class="field" id="f-bdate" style="margin-top:16px">
+        <span class="lbl" id="bdate-lbl">تاريخ الميلاد (ميلادي)</span>
+        <div class="row3" role="group" aria-labelledby="bdate-lbl">
+          <select id="bday" aria-label="اليوم"></select>
+          <select id="bmonth" aria-label="الشهر"></select>
+          <select id="byear" aria-label="السنة"></select>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>مكان وساعة الميلاد</legend>
+      <div class="grid">
+        <div class="field" id="f-bcountry">
+          <label for="bcountry">دولة الميلاد</label>
+          <select id="bcountry"></select>
+        </div>
+        <div class="field" id="f-bcity">
+          <label for="bcity">مدينة الميلاد</label>
+          <select id="bcity" disabled><option value="">اختر الدولة أولاً</option></select>
+        </div>
+      </div>
+      <div class="timebox" style="margin-top:16px" id="f-btime">
+        <div class="field"><label for="bhour">الساعة</label><select id="bhour"></select></div>
+        <div class="field"><label for="bmin">الدقيقة</label><select id="bmin"></select></div>
+        <label class="check"><input type="checkbox" id="notime"> عدم معرفة الساعة</label>
+      </div>
+      <p class="hint">عند اختيار «عدم معرفة الساعة» يُعتبر البرج الشمسي هو الطالع والبيت الأول.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>السنوية المطلوبة</legend>
+      <div class="grid">
+        <div class="field" id="f-tyear">
+          <label for="tyear">السنة المراد معرفة سنويتها</label>
+          <select id="tyear"></select>
+        </div>
+        <div class="field" id="f-tcountry">
+          <label for="tcountry">دولة السنوية</label>
+          <select id="tcountry"></select>
+        </div>
+        <div class="field" id="f-tcity">
+          <label for="tcity">مدينة السنوية</label>
+          <select id="tcity" disabled><option value="">اختر الدولة أولاً</option></select>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="actions">
+      <p class="errors" id="errors" role="alert" hidden></p>
+      <button type="submit" class="btn">استخرج السنوية</button>
+      <button type="button" class="btn alt" id="download-app-btn" title="تحميل ملف HTML كاملاً">تحميل ملف HTML</button>
+    </div>
+  </form>
+
+  <section id="result" hidden aria-live="polite"></section>
+</main>
+
+<footer>
+  <div class="wrap">القراءات الفلكية رمزية للاسترشاد ولا تحدد المصير. تصميم الفلكي استرو رادار.</div>
+</footer>
+
+<script>
+/* مصفوفات دول ومدن الشرق الأوسط وأوروبا وأمريكا الشمالية
+   كل مدينة: [الاسم, خط العرض, خط الطول, المنطقة الزمنية (اختياري)]
+   المدن مرتبة حسب الكثافة السكانية والأهمية (أهم 10 مدن لكل دولة). */
+window.ME_COUNTRIES = [
+  {
+    "id": "SY",
+    "ar": "سوريا",
+    "tz": "Asia/Damascus",
+    "cities": [
+      [
+        "حلب",
+        36.2021,
+        37.1343
+      ],
+      [
+        "دمشق",
+        33.5138,
+        36.2765
+      ],
+      [
+        "حمص",
+        34.7324,
+        36.7137
+      ],
+      [
+        "اللاذقية",
+        35.5317,
+        35.7915
+      ],
+      [
+        "حماة",
+        35.1318,
+        36.7578
+      ],
+      [
+        "الرقة",
+        35.9528,
+        39.0079
+      ],
+      [
+        "دير الزور",
+        35.3359,
+        40.1408
+      ],
+      [
+        "الحسكة",
+        36.5024,
+        40.7477
+      ],
+      [
+        "القامشلي",
+        37.0522,
+        41.2314
+      ],
+      [
+        "دوما",
+        33.5716,
+        36.4019
+      ]
+    ]
+  },
+  {
+    "id": "JO",
+    "ar": "الأردن",
+    "tz": "Asia/Amman",
+    "cities": [
+      [
+        "عمّان",
+        31.9454,
+        35.9284
+      ],
+      [
+        "الزرقاء",
+        32.0728,
+        36.088
+      ],
+      [
+        "إربد",
+        32.5556,
+        35.8469
+      ],
+      [
+        "الرصيفة",
+        32.017,
+        36.047
+      ],
+      [
+        "العقبة",
+        29.5321,
+        35.0063
+      ],
+      [
+        "سحاب",
+        31.863,
+        36.003
+      ],
+      [
+        "وادي السير",
+        31.95,
+        35.8167
+      ],
+      [
+        "مادبا",
+        31.716,
+        35.7939
+      ],
+      [
+        "السلط",
+        32.0392,
+        35.7272
+      ],
+      [
+        "المفرق",
+        32.3406,
+        36.208
+      ]
+    ]
+  },
+  {
+    "id": "PS",
+    "ar": "فلسطين",
+    "tz": "Asia/Hebron",
+    "cities": [
+      [
+        "غزة",
+        31.5017,
+        34.4668,
+        "Asia/Gaza"
+      ],
+      [
+        "الخليل",
+        31.5326,
+        35.0998
+      ],
+      [
+        "خان يونس",
+        31.3462,
+        34.306,
+        "Asia/Gaza"
+      ],
+      [
+        "جباليا",
+        31.5272,
+        34.4833,
+        "Asia/Gaza"
+      ],
+      [
+        "رفح",
+        31.2969,
+        34.2436,
+        "Asia/Gaza"
+      ],
+      [
+        "نابلس",
+        32.2211,
+        35.2544
+      ],
+      [
+        "القدس",
+        31.7683,
+        35.2137
+      ],
+      [
+        "دير البلح",
+        31.418,
+        34.35,
+        "Asia/Gaza"
+      ],
+      [
+        "جنين",
+        32.461,
+        35.3
+      ],
+      [
+        "رام الله",
+        31.9038,
+        35.2034
+      ]
+    ]
+  },
+  {
+    "id": "EG",
+    "ar": "مصر",
+    "tz": "Africa/Cairo",
+    "cities": [
+      [
+        "القاهرة",
+        30.0444,
+        31.2357
+      ],
+      [
+        "الإسكندرية",
+        31.2001,
+        29.9187
+      ],
+      [
+        "الجيزة",
+        30.0131,
+        31.2089
+      ],
+      [
+        "شبرا الخيمة",
+        30.1286,
+        31.2422
+      ],
+      [
+        "بورسعيد",
+        31.2653,
+        32.3019
+      ],
+      [
+        "السويس",
+        29.9668,
+        32.5498
+      ],
+      [
+        "المنصورة",
+        31.0409,
+        31.3785
+      ],
+      [
+        "المحلة الكبرى",
+        30.97,
+        31.1669
+      ],
+      [
+        "طنطا",
+        30.7865,
+        31.0004
+      ],
+      [
+        "أسيوط",
+        27.1809,
+        31.1837
+      ]
+    ]
+  },
+  {
+    "id": "SA",
+    "ar": "السعودية",
+    "tz": "Asia/Riyadh",
+    "cities": [
+      [
+        "الرياض",
+        24.7136,
+        46.6753
+      ],
+      [
+        "جدة",
+        21.4858,
+        39.1925
+      ],
+      [
+        "مكة المكرمة",
+        21.3891,
+        39.8579
+      ],
+      [
+        "المدينة المنورة",
+        24.5247,
+        39.5692
+      ],
+      [
+        "الدمام",
+        26.4207,
+        50.0888
+      ],
+      [
+        "الطائف",
+        21.2703,
+        40.4158
+      ],
+      [
+        "تبوك",
+        28.3838,
+        36.555
+      ],
+      [
+        "بريدة",
+        26.326,
+        43.975
+      ],
+      [
+        "الخبر",
+        26.2172,
+        50.1971
+      ],
+      [
+        "أبها",
+        18.2164,
+        42.5053
+      ]
+    ]
+  },
+  {
+    "id": "AE",
+    "ar": "الإمارات",
+    "tz": "Asia/Dubai",
+    "cities": [
+      [
+        "دبي",
+        25.2048,
+        55.2708
+      ],
+      [
+        "أبوظبي",
+        24.4539,
+        54.3773
+      ],
+      [
+        "الشارقة",
+        25.3463,
+        55.4209
+      ],
+      [
+        "العين",
+        24.2075,
+        55.7447
+      ],
+      [
+        "عجمان",
+        25.4052,
+        55.5136
+      ],
+      [
+        "رأس الخيمة",
+        25.7895,
+        55.9432
+      ],
+      [
+        "الفجيرة",
+        25.1288,
+        56.3265
+      ],
+      [
+        "أم القيوين",
+        25.5647,
+        55.5552
+      ],
+      [
+        "خورفكان",
+        25.3394,
+        56.3419
+      ],
+      [
+        "دبا الفجيرة",
+        25.5923,
+        56.2619
+      ]
+    ]
+  },
+  {
+    "id": "IQ",
+    "ar": "العراق",
+    "tz": "Asia/Baghdad",
+    "cities": [
+      [
+        "بغداد",
+        33.3152,
+        44.3661
+      ],
+      [
+        "الموصل",
+        36.34,
+        43.13
+      ],
+      [
+        "البصرة",
+        30.5085,
+        47.7804
+      ],
+      [
+        "أربيل",
+        36.1901,
+        44.0091
+      ],
+      [
+        "السليمانية",
+        35.5558,
+        45.4351
+      ],
+      [
+        "النجف",
+        32.0,
+        44.336
+      ],
+      [
+        "كربلاء",
+        32.616,
+        44.0249
+      ],
+      [
+        "كركوك",
+        35.4681,
+        44.3922
+      ],
+      [
+        "الناصرية",
+        31.0439,
+        46.2576
+      ],
+      [
+        "الحلة",
+        32.4637,
+        44.4196
+      ]
+    ]
+  },
+  {
+    "id": "KW",
+    "ar": "الكويت",
+    "tz": "Asia/Kuwait",
+    "cities": [
+      [
+        "مدينة الكويت",
+        29.3759,
+        47.9774
+      ],
+      [
+        "حولي",
+        29.3328,
+        48.0286
+      ],
+      [
+        "السالمية",
+        29.3339,
+        48.0764
+      ],
+      [
+        "الفروانية",
+        29.2775,
+        47.9585
+      ],
+      [
+        "الجهراء",
+        29.3375,
+        47.6581
+      ],
+      [
+        "الفحيحيل",
+        29.0828,
+        48.1301
+      ],
+      [
+        "الأحمدي",
+        29.0769,
+        48.0838
+      ],
+      [
+        "المنقف",
+        29.0975,
+        48.131
+      ],
+      [
+        "صباح السالم",
+        29.2575,
+        48.0583
+      ],
+      [
+        "أبو حليفة",
+        29.1328,
+        48.1297
+      ]
+    ]
+  },
+  {
+    "id": "BH",
+    "ar": "البحرين",
+    "tz": "Asia/Bahrain",
+    "cities": [
+      [
+        "المنامة",
+        26.2285,
+        50.586
+      ],
+      [
+        "الرفاع",
+        26.13,
+        50.555
+      ],
+      [
+        "المحرق",
+        26.2572,
+        50.6119
+      ],
+      [
+        "مدينة حمد",
+        26.115,
+        50.5069
+      ],
+      [
+        "عالي",
+        26.155,
+        50.53
+      ],
+      [
+        "مدينة عيسى",
+        26.1736,
+        50.5478
+      ],
+      [
+        "سترة",
+        26.1547,
+        50.6206
+      ],
+      [
+        "البديع",
+        26.22,
+        50.45
+      ],
+      [
+        "جدحفص",
+        26.2178,
+        50.54
+      ],
+      [
+        "السنابس",
+        26.24,
+        50.55
+      ]
+    ]
+  },
+  {
+    "id": "QA",
+    "ar": "قطر",
+    "tz": "Asia/Qatar",
+    "cities": [
+      [
+        "الدوحة",
+        25.2854,
+        51.531
+      ],
+      [
+        "الريان",
+        25.2919,
+        51.4244
+      ],
+      [
+        "أم صلال",
+        25.4167,
+        51.4
+      ],
+      [
+        "الوكرة",
+        25.1715,
+        51.6034
+      ],
+      [
+        "الخور",
+        25.6804,
+        51.4968
+      ],
+      [
+        "الشحانية",
+        25.37,
+        51.2
+      ],
+      [
+        "الضعاين",
+        25.58,
+        51.48
+      ],
+      [
+        "مسيعيد",
+        24.993,
+        51.55
+      ],
+      [
+        "دخان",
+        25.4244,
+        50.7861
+      ],
+      [
+        "الشمال",
+        26.12,
+        51.2
+      ]
+    ]
+  },
+  {
+    "id": "OM",
+    "ar": "عُمان",
+    "tz": "Asia/Muscat",
+    "cities": [
+      [
+        "مسقط",
+        23.588,
+        58.3829
+      ],
+      [
+        "السيب",
+        23.6702,
+        58.1891
+      ],
+      [
+        "صلالة",
+        17.0151,
+        54.0924
+      ],
+      [
+        "صحار",
+        24.3417,
+        56.709
+      ],
+      [
+        "بوشر",
+        23.5833,
+        58.4
+      ],
+      [
+        "نزوى",
+        22.9333,
+        57.5333
+      ],
+      [
+        "صور",
+        22.5667,
+        59.5289
+      ],
+      [
+        "عبري",
+        23.2257,
+        56.5157
+      ],
+      [
+        "بركاء",
+        23.7,
+        57.8833
+      ],
+      [
+        "الرستاق",
+        23.3908,
+        57.4244
+      ]
+    ]
+  },
+  {
+    "id": "YE",
+    "ar": "اليمن",
+    "tz": "Asia/Aden",
+    "cities": [
+      [
+        "صنعاء",
+        15.3694,
+        44.191
+      ],
+      [
+        "عدن",
+        12.7855,
+        45.0187
+      ],
+      [
+        "تعز",
+        13.5795,
+        44.0209
+      ],
+      [
+        "الحديدة",
+        14.7979,
+        42.954
+      ],
+      [
+        "إب",
+        13.9667,
+        44.1833
+      ],
+      [
+        "المكلا",
+        14.5425,
+        49.1242
+      ],
+      [
+        "ذمار",
+        14.543,
+        44.405
+      ],
+      [
+        "عمران",
+        15.6594,
+        43.9439
+      ],
+      [
+        "سيئون",
+        15.9433,
+        48.7872
+      ],
+      [
+        "زنجبار",
+        13.1287,
+        45.38
+      ]
+    ]
+  },
+  {
+    "id": "LB",
+    "ar": "لبنان",
+    "tz": "Asia/Beirut",
+    "cities": [
+      [
+        "بيروت",
+        33.8938,
+        35.5018
+      ],
+      [
+        "طرابلس",
+        34.4367,
+        35.8497
+      ],
+      [
+        "صيدا",
+        33.563,
+        35.3688
+      ],
+      [
+        "صور",
+        33.2705,
+        35.2038
+      ],
+      [
+        "النبطية",
+        33.3772,
+        35.4836
+      ],
+      [
+        "جونية",
+        33.9808,
+        35.6178
+      ],
+      [
+        "زحلة",
+        33.8497,
+        35.902
+      ],
+      [
+        "بعلبك",
+        34.0058,
+        36.2181
+      ],
+      [
+        "جبيل",
+        34.1236,
+        35.6511
+      ],
+      [
+        "عاليه",
+        33.8103,
+        35.6
+      ]
+    ]
+  },
+  {
+    "id": "TR",
+    "ar": "تركيا",
+    "tz": "Europe/Istanbul",
+    "cities": [
+      [
+        "إسطنبول",
+        41.0082,
+        28.9784
+      ],
+      [
+        "أنقرة",
+        39.9334,
+        32.8597
+      ],
+      [
+        "إزمير",
+        38.4237,
+        27.1428
+      ],
+      [
+        "بورصة",
+        40.1885,
+        29.061
+      ],
+      [
+        "أضنة",
+        37.0,
+        35.3213
+      ],
+      [
+        "غازي عنتاب",
+        37.0662,
+        37.3833
+      ],
+      [
+        "قونية",
+        37.8746,
+        32.4932
+      ],
+      [
+        "أنطاليا",
+        36.8969,
+        30.7133
+      ],
+      [
+        "قيصري",
+        38.7312,
+        35.4787
+      ],
+      [
+        "مرسين",
+        36.8121,
+        34.6415
+      ]
+    ]
+  },
+  {
+    "id": "IR",
+    "ar": "إيران",
+    "tz": "Asia/Tehran",
+    "cities": [
+      [
+        "طهران",
+        35.6892,
+        51.389
+      ],
+      [
+        "مشهد",
+        36.2605,
+        59.6168
+      ],
+      [
+        "أصفهان",
+        32.6546,
+        51.668
+      ],
+      [
+        "كرج",
+        35.84,
+        50.9391
+      ],
+      [
+        "شيراز",
+        29.5918,
+        52.5836
+      ],
+      [
+        "تبريز",
+        38.08,
+        46.2919
+      ],
+      [
+        "قم",
+        34.6416,
+        50.8746
+      ],
+      [
+        "الأهواز",
+        31.3183,
+        48.6706
+      ],
+      [
+        "كرمانشاه",
+        34.3277,
+        47.0778
+      ],
+      [
+        "أرومية",
+        37.5527,
+        45.076
+      ]
+    ]
+  },
+  {
+    "id": "IL",
+    "ar": "إسرائيل",
+    "tz": "Asia/Jerusalem",
+    "cities": [
+      [
+        "تل أبيب",
+        32.0853,
+        34.7818
+      ],
+      [
+        "حيفا",
+        32.794,
+        34.9896
+      ],
+      [
+        "ريشون لتسيون",
+        31.973,
+        34.7925
+      ],
+      [
+        "بتاح تكفا",
+        32.084,
+        34.8878
+      ],
+      [
+        "أشدود",
+        31.8044,
+        34.6553
+      ],
+      [
+        "نتانيا",
+        32.3215,
+        34.8532
+      ],
+      [
+        "بئر السبع",
+        31.253,
+        34.7915
+      ],
+      [
+        "حولون",
+        32.0114,
+        34.7748
+      ],
+      [
+        "بني براك",
+        32.0807,
+        34.8338
+      ],
+      [
+        "رمات غان",
+        32.0684,
+        34.8248
+      ]
+    ]
+  }
+];
+</script>
+<script>
+/* أوروبا الغربية والشمالية والوسطى + بريطانيا
+   كل مدينة: [الاسم, خط العرض, خط الطول, المنطقة الزمنية (اختياري)] */
+window.EUROPE_A = [
+  {
+    "id": "GB",
+    "ar": "بريطانيا",
+    "tz": "Europe/London",
+    "cities": [
+      [
+        "لندن",
+        51.5074,
+        -0.1278
+      ],
+      [
+        "برمنغهام",
+        52.4862,
+        -1.8904
+      ],
+      [
+        "غلاسكو",
+        55.8642,
+        -4.2518
+      ],
+      [
+        "ليفربول",
+        53.4084,
+        -2.9916
+      ],
+      [
+        "بريستول",
+        51.4545,
+        -2.5879
+      ],
+      [
+        "مانشستر",
+        53.4808,
+        -2.2426
+      ],
+      [
+        "شيفيلد",
+        53.3811,
+        -1.4701
+      ],
+      [
+        "ليدز",
+        53.8008,
+        -1.5491
+      ],
+      [
+        "إدنبرة",
+        55.9533,
+        -3.1883
+      ],
+      [
+        "كارديف",
+        51.4816,
+        -3.1791
+      ]
+    ]
+  },
+  {
+    "id": "DE",
+    "ar": "ألمانيا",
+    "tz": "Europe/Berlin",
+    "cities": [
+      [
+        "برلين",
+        52.52,
+        13.405
+      ],
+      [
+        "هامبورغ",
+        53.5511,
+        9.9937
+      ],
+      [
+        "ميونخ",
+        48.1351,
+        11.582
+      ],
+      [
+        "كولونيا",
+        50.9375,
+        6.9603
+      ],
+      [
+        "فرانكفورت",
+        50.1109,
+        8.6821
+      ],
+      [
+        "شتوتغارت",
+        48.7758,
+        9.1829
+      ],
+      [
+        "دوسلدورف",
+        51.2277,
+        6.7735
+      ],
+      [
+        "لايبزيغ",
+        51.3397,
+        12.3731
+      ],
+      [
+        "دورتموند",
+        51.5136,
+        7.4653
+      ],
+      [
+        "إسن",
+        51.4556,
+        7.0116
+      ]
+    ]
+  },
+  {
+    "id": "FR",
+    "ar": "فرنسا",
+    "tz": "Europe/Paris",
+    "cities": [
+      [
+        "باريس",
+        48.8566,
+        2.3522
+      ],
+      [
+        "مرسيليا",
+        43.2965,
+        5.3698
+      ],
+      [
+        "ليون",
+        45.764,
+        4.8357
+      ],
+      [
+        "تولوز",
+        43.6047,
+        1.4442
+      ],
+      [
+        "نيس",
+        43.7102,
+        7.262
+      ],
+      [
+        "نانت",
+        47.2184,
+        -1.5536
+      ],
+      [
+        "مونبلييه",
+        43.6108,
+        3.8767
+      ],
+      [
+        "ستراسبورغ",
+        48.5734,
+        7.7521
+      ],
+      [
+        "بوردو",
+        44.8378,
+        -0.5792
+      ],
+      [
+        "ليل",
+        50.6292,
+        3.0573
+      ]
+    ]
+  },
+  {
+    "id": "IT",
+    "ar": "إيطاليا",
+    "tz": "Europe/Rome",
+    "cities": [
+      [
+        "روما",
+        41.9028,
+        12.4964
+      ],
+      [
+        "ميلانو",
+        45.4642,
+        9.19
+      ],
+      [
+        "نابولي",
+        40.8518,
+        14.2681
+      ],
+      [
+        "تورينو",
+        45.0703,
+        7.6869
+      ],
+      [
+        "باليرمو",
+        38.1157,
+        13.3615
+      ],
+      [
+        "جنوة",
+        44.4056,
+        8.9463
+      ],
+      [
+        "بولونيا",
+        44.4949,
+        11.3426
+      ],
+      [
+        "فلورنسا",
+        43.7696,
+        11.2558
+      ],
+      [
+        "باري",
+        41.1171,
+        16.8719
+      ],
+      [
+        "كاتانيا",
+        37.5079,
+        15.083
+      ]
+    ]
+  },
+  {
+    "id": "ES",
+    "ar": "إسبانيا",
+    "tz": "Europe/Madrid",
+    "cities": [
+      [
+        "مدريد",
+        40.4168,
+        -3.7038
+      ],
+      [
+        "برشلونة",
+        41.3851,
+        2.1734
+      ],
+      [
+        "فالنسيا",
+        39.4699,
+        -0.3763
+      ],
+      [
+        "إشبيلية",
+        37.3891,
+        -5.9845
+      ],
+      [
+        "سرقسطة",
+        41.6488,
+        -0.8891
+      ],
+      [
+        "مالقة",
+        36.7213,
+        -4.4214
+      ],
+      [
+        "مرسية",
+        37.9922,
+        -1.1307
+      ],
+      [
+        "بالما",
+        39.5696,
+        2.6502
+      ],
+      [
+        "لاس بالماس",
+        28.1235,
+        -15.4363,
+        "Atlantic/Canary"
+      ],
+      [
+        "بلباو",
+        43.263,
+        -2.935
+      ]
+    ]
+  },
+  {
+    "id": "PT",
+    "ar": "البرتغال",
+    "tz": "Europe/Lisbon",
+    "cities": [
+      [
+        "لشبونة",
+        38.7223,
+        -9.1393
+      ],
+      [
+        "بورتو",
+        41.1579,
+        -8.6291
+      ],
+      [
+        "فيلا نوفا دي غايا",
+        41.1239,
+        -8.6118
+      ],
+      [
+        "أمادورا",
+        38.7538,
+        -9.2308
+      ],
+      [
+        "براغا",
+        41.5454,
+        -8.4265
+      ],
+      [
+        "سيتوبال",
+        38.5244,
+        -8.8882
+      ],
+      [
+        "كويمبرا",
+        40.2033,
+        -8.4103
+      ],
+      [
+        "فونشال",
+        32.6669,
+        -16.9241,
+        "Atlantic/Madeira"
+      ],
+      [
+        "ألمادا",
+        38.679,
+        -9.1569
+      ],
+      [
+        "كيلوز",
+        38.7566,
+        -9.2545
+      ]
+    ]
+  },
+  {
+    "id": "NL",
+    "ar": "هولندا",
+    "tz": "Europe/Amsterdam",
+    "cities": [
+      [
+        "أمستردام",
+        52.3676,
+        4.9041
+      ],
+      [
+        "روتردام",
+        51.9244,
+        4.4777
+      ],
+      [
+        "لاهاي",
+        52.0705,
+        4.3007
+      ],
+      [
+        "أوترخت",
+        52.0907,
+        5.1214
+      ],
+      [
+        "أيندهوفن",
+        51.4416,
+        5.4697
+      ],
+      [
+        "خرونينغن",
+        53.2194,
+        6.5665
+      ],
+      [
+        "تيلبورخ",
+        51.5555,
+        5.0913
+      ],
+      [
+        "ألميري",
+        52.3508,
+        5.2647
+      ],
+      [
+        "بريدا",
+        51.5719,
+        4.7683
+      ],
+      [
+        "نايميخن",
+        51.8126,
+        5.8372
+      ]
+    ]
+  },
+  {
+    "id": "BE",
+    "ar": "بلجيكا",
+    "tz": "Europe/Brussels",
+    "cities": [
+      [
+        "بروكسل",
+        50.8503,
+        4.3517
+      ],
+      [
+        "أنتويرب",
+        51.2194,
+        4.4025
+      ],
+      [
+        "غنت",
+        51.0543,
+        3.7174
+      ],
+      [
+        "شارلروا",
+        50.4108,
+        4.4446
+      ],
+      [
+        "لييج",
+        50.6326,
+        5.5797
+      ],
+      [
+        "بروج",
+        51.2093,
+        3.2247
+      ],
+      [
+        "نامور",
+        50.4674,
+        4.872
+      ],
+      [
+        "لوفين",
+        50.8798,
+        4.7005
+      ],
+      [
+        "مونس",
+        50.4542,
+        3.9523
+      ],
+      [
+        "آلست",
+        50.936,
+        4.0355
+      ]
+    ]
+  },
+  {
+    "id": "LU",
+    "ar": "لوكسمبورغ",
+    "tz": "Europe/Luxembourg",
+    "cities": [
+      [
+        "مدينة لوكسمبورغ",
+        49.6116,
+        6.1319
+      ],
+      [
+        "إيش سور ألزيت",
+        49.4958,
+        5.9806
+      ],
+      [
+        "ديفرداندج",
+        49.5242,
+        5.8914
+      ],
+      [
+        "دودلانج",
+        49.4806,
+        6.0875
+      ],
+      [
+        "إتلبروك",
+        49.8475,
+        6.1042
+      ],
+      [
+        "ديكيرش",
+        49.8683,
+        6.1594
+      ],
+      [
+        "فيلتز",
+        49.9653,
+        5.9319
+      ],
+      [
+        "إشترناخ",
+        49.8117,
+        6.4178
+      ],
+      [
+        "غريفنماخر",
+        49.6778,
+        6.4411
+      ],
+      [
+        "ريميش",
+        49.545,
+        6.3667
+      ]
+    ]
+  },
+  {
+    "id": "CH",
+    "ar": "سويسرا",
+    "tz": "Europe/Zurich",
+    "cities": [
+      [
+        "زيورخ",
+        47.3769,
+        8.5417
+      ],
+      [
+        "جنيف",
+        46.2044,
+        6.1432
+      ],
+      [
+        "بازل",
+        47.5596,
+        7.5886
+      ],
+      [
+        "لوزان",
+        46.5197,
+        6.6323
+      ],
+      [
+        "برن",
+        46.948,
+        7.4474
+      ],
+      [
+        "فينترتور",
+        47.5001,
+        8.724
+      ],
+      [
+        "لوسيرن",
+        47.0502,
+        8.3093
+      ],
+      [
+        "سانت غالن",
+        47.4245,
+        9.3767
+      ],
+      [
+        "لوغانو",
+        46.0037,
+        8.9511
+      ],
+      [
+        "بيل",
+        47.1368,
+        7.2468
+      ]
+    ]
+  },
+  {
+    "id": "AT",
+    "ar": "النمسا",
+    "tz": "Europe/Vienna",
+    "cities": [
+      [
+        "فيينا",
+        48.2082,
+        16.3738
+      ],
+      [
+        "غراتس",
+        47.0707,
+        15.4395
+      ],
+      [
+        "لينتس",
+        48.3069,
+        14.2858
+      ],
+      [
+        "سالزبورغ",
+        47.8095,
+        13.055
+      ],
+      [
+        "إنسبروك",
+        47.2692,
+        11.4041
+      ],
+      [
+        "كلاغنفورت",
+        46.6247,
+        14.305
+      ],
+      [
+        "فيلاخ",
+        46.6111,
+        13.8558
+      ],
+      [
+        "فيلس",
+        48.1575,
+        14.0289
+      ],
+      [
+        "سانت بولتن",
+        48.2047,
+        15.6256
+      ],
+      [
+        "دورنبيرن",
+        47.4125,
+        9.7417
+      ]
+    ]
+  },
+  {
+    "id": "IE",
+    "ar": "إيرلندا",
+    "tz": "Europe/Dublin",
+    "cities": [
+      [
+        "دبلن",
+        53.3498,
+        -6.2603
+      ],
+      [
+        "كورك",
+        51.8985,
+        -8.4756
+      ],
+      [
+        "ليمريك",
+        52.6638,
+        -8.6267
+      ],
+      [
+        "غالواي",
+        53.2707,
+        -9.0568
+      ],
+      [
+        "واترفورد",
+        52.2593,
+        -7.1101
+      ],
+      [
+        "دروغيدا",
+        53.7179,
+        -6.3561
+      ],
+      [
+        "دندالك",
+        54.0,
+        -6.4167
+      ],
+      [
+        "سووردز",
+        53.4597,
+        -6.2181
+      ],
+      [
+        "براي",
+        53.2028,
+        -6.0985
+      ],
+      [
+        "نافان",
+        53.6528,
+        -6.6814
+      ]
+    ]
+  },
+  {
+    "id": "IS",
+    "ar": "آيسلندا",
+    "tz": "Atlantic/Reykjavik",
+    "cities": [
+      [
+        "ريكيافيك",
+        64.1466,
+        -21.9426
+      ],
+      [
+        "كوباوفوغور",
+        64.1,
+        -21.9
+      ],
+      [
+        "هافنارفيورد",
+        64.0671,
+        -21.9377
+      ],
+      [
+        "أكوريري",
+        65.6835,
+        -18.1105
+      ],
+      [
+        "ريكيانيسباير",
+        63.996,
+        -22.5614
+      ],
+      [
+        "غاردابير",
+        64.0886,
+        -21.923
+      ],
+      [
+        "موسفلسباير",
+        64.1667,
+        -21.7
+      ],
+      [
+        "سيلفوس",
+        63.9331,
+        -21.0019
+      ],
+      [
+        "أكرانيس",
+        64.319,
+        -22.075
+      ],
+      [
+        "سلتيارنارنيس",
+        64.15,
+        -22.0
+      ]
+    ]
+  },
+  {
+    "id": "NO",
+    "ar": "النرويج",
+    "tz": "Europe/Oslo",
+    "cities": [
+      [
+        "أوسلو",
+        59.9139,
+        10.7522
+      ],
+      [
+        "بيرغن",
+        60.3913,
+        5.3221
+      ],
+      [
+        "تروندهايم",
+        63.4305,
+        10.3951
+      ],
+      [
+        "ستافنغر",
+        58.97,
+        5.7331
+      ],
+      [
+        "درامن",
+        59.744,
+        10.2045
+      ],
+      [
+        "فريدريكستاد",
+        59.2181,
+        10.9298
+      ],
+      [
+        "كريستيانساند",
+        58.1599,
+        8.0182
+      ],
+      [
+        "ساندنس",
+        58.8524,
+        5.7352
+      ],
+      [
+        "ترومسو",
+        69.6492,
+        18.9553
+      ],
+      [
+        "سارسبورغ",
+        59.2839,
+        11.1095
+      ]
+    ]
+  },
+  {
+    "id": "SE",
+    "ar": "السويد",
+    "tz": "Europe/Stockholm",
+    "cities": [
+      [
+        "ستوكهولم",
+        59.3293,
+        18.0686
+      ],
+      [
+        "غوتنبرغ",
+        57.7089,
+        11.9746
+      ],
+      [
+        "مالمو",
+        55.605,
+        13.0038
+      ],
+      [
+        "أوبسالا",
+        59.8586,
+        17.6389
+      ],
+      [
+        "لينشوبينغ",
+        58.4108,
+        15.6214
+      ],
+      [
+        "فيستروس",
+        59.6099,
+        16.5448
+      ],
+      [
+        "أوريبرو",
+        59.2753,
+        15.2134
+      ],
+      [
+        "نورشوبينغ",
+        58.5877,
+        16.1924
+      ],
+      [
+        "هلسنبورغ",
+        56.0465,
+        12.6945
+      ],
+      [
+        "يونشوبينغ",
+        57.7826,
+        14.1618
+      ]
+    ]
+  },
+  {
+    "id": "DK",
+    "ar": "الدنمارك",
+    "tz": "Europe/Copenhagen",
+    "cities": [
+      [
+        "كوبنهاغن",
+        55.6761,
+        12.5683
+      ],
+      [
+        "آرهوس",
+        56.1629,
+        10.2039
+      ],
+      [
+        "أودنسه",
+        55.4038,
+        10.4024
+      ],
+      [
+        "آلبورغ",
+        57.0488,
+        9.9217
+      ],
+      [
+        "إسبيرغ",
+        55.4765,
+        8.4594
+      ],
+      [
+        "راندرس",
+        56.4607,
+        10.0364
+      ],
+      [
+        "كولدينغ",
+        55.4904,
+        9.4722
+      ],
+      [
+        "هورسنس",
+        55.8607,
+        9.8503
+      ],
+      [
+        "فايله",
+        55.7113,
+        9.5357
+      ],
+      [
+        "روسكيلده",
+        55.6415,
+        12.0803
+      ]
+    ]
+  },
+  {
+    "id": "FI",
+    "ar": "فنلندا",
+    "tz": "Europe/Helsinki",
+    "cities": [
+      [
+        "هلسنكي",
+        60.1699,
+        24.9384
+      ],
+      [
+        "إسبو",
+        60.2055,
+        24.6559
+      ],
+      [
+        "تامبيري",
+        61.4978,
+        23.761
+      ],
+      [
+        "فانتا",
+        60.2934,
+        25.0378
+      ],
+      [
+        "أولو",
+        65.0121,
+        25.4651
+      ],
+      [
+        "توركو",
+        60.4518,
+        22.2666
+      ],
+      [
+        "يفاسكولا",
+        62.2426,
+        25.7473
+      ],
+      [
+        "لاهتي",
+        60.9827,
+        25.6612
+      ],
+      [
+        "كوبيو",
+        62.8924,
+        27.677
+      ],
+      [
+        "بوري",
+        61.4851,
+        21.7974
+      ]
+    ]
+  },
+  {
+    "id": "LI",
+    "ar": "ليختنشتاين",
+    "tz": "Europe/Vaduz",
+    "cities": [
+      [
+        "شان",
+        47.1658,
+        9.5086
+      ],
+      [
+        "فادوتس",
+        47.141,
+        9.5209
+      ],
+      [
+        "تريزن",
+        47.1086,
+        9.5281
+      ],
+      [
+        "بالتسرز",
+        47.0653,
+        9.5033
+      ],
+      [
+        "إشن",
+        47.2114,
+        9.5222
+      ],
+      [
+        "ماورن",
+        47.2181,
+        9.5425
+      ],
+      [
+        "تريزنبرغ",
+        47.1186,
+        9.5472
+      ],
+      [
+        "روغل",
+        47.2392,
+        9.5272
+      ],
+      [
+        "غامبرين",
+        47.2181,
+        9.5033
+      ],
+      [
+        "شيلنبرغ",
+        47.2267,
+        9.5453
+      ]
+    ]
+  },
+  {
+    "id": "MC",
+    "ar": "موناكو",
+    "tz": "Europe/Monaco",
+    "cities": [
+      [
+        "مونتي كارلو",
+        43.7396,
+        7.4276
+      ],
+      [
+        "لا كوندامين",
+        43.735,
+        7.42
+      ],
+      [
+        "موناكو فيل",
+        43.7311,
+        7.423
+      ],
+      [
+        "فونتفيل",
+        43.7285,
+        7.418
+      ],
+      [
+        "لارفوتو",
+        43.746,
+        7.433
+      ],
+      [
+        "لا روس",
+        43.749,
+        7.432
+      ],
+      [
+        "سان ميشيل",
+        43.741,
+        7.424
+      ],
+      [
+        "لا كول",
+        43.736,
+        7.415
+      ],
+      [
+        "ليه ريفوار",
+        43.734,
+        7.414
+      ],
+      [
+        "مونايلغيتي",
+        43.7375,
+        7.417
+      ]
+    ]
+  },
+  {
+    "id": "AD",
+    "ar": "أندورا",
+    "tz": "Europe/Andorra",
+    "cities": [
+      [
+        "أندورا لا فيلا",
+        42.5063,
+        1.5218
+      ],
+      [
+        "إسكالديس-إنجوردني",
+        42.5072,
+        1.5341
+      ],
+      [
+        "إنكامب",
+        42.5361,
+        1.5828
+      ],
+      [
+        "سانت جوليا دي لوريا",
+        42.4637,
+        1.4913
+      ],
+      [
+        "لا ماسانا",
+        42.5449,
+        1.5148
+      ],
+      [
+        "أوردينو",
+        42.5556,
+        1.5333
+      ],
+      [
+        "كانيلو",
+        42.5676,
+        1.5976
+      ],
+      [
+        "باس دي لا كاسا",
+        42.5428,
+        1.7336
+      ],
+      [
+        "أرينسال",
+        42.5721,
+        1.4842
+      ],
+      [
+        "إل تارتير",
+        42.5794,
+        1.6536
+      ]
+    ]
+  },
+  {
+    "id": "SM",
+    "ar": "سان مارينو",
+    "tz": "Europe/San_Marino",
+    "cities": [
+      [
+        "دوغانا",
+        43.9794,
+        12.4894
+      ],
+      [
+        "سيرافالي",
+        43.9681,
+        12.4906
+      ],
+      [
+        "بورغو ماجوري",
+        43.9381,
+        12.4472
+      ],
+      [
+        "سان مارينو",
+        43.9424,
+        12.4578
+      ],
+      [
+        "دومانيانو",
+        43.9486,
+        12.4661
+      ],
+      [
+        "فيورنتينو",
+        43.9097,
+        12.4586
+      ],
+      [
+        "أكوافيفا",
+        43.9411,
+        12.4172
+      ],
+      [
+        "فاينانو",
+        43.9336,
+        12.4986
+      ],
+      [
+        "مونتيجاردينو",
+        43.9078,
+        12.4806
+      ],
+      [
+        "كييسانوفا",
+        43.9136,
+        12.4247
+      ]
+    ]
+  },
+  {
+    "id": "MT",
+    "ar": "مالطا",
+    "tz": "Europe/Malta",
+    "cities": [
+      [
+        "بيركيركارا",
+        35.8972,
+        14.4611
+      ],
+      [
+        "قورمي",
+        35.8761,
+        14.4694
+      ],
+      [
+        "موستا",
+        35.9094,
+        14.4256
+      ],
+      [
+        "زبار",
+        35.8728,
+        14.5342
+      ],
+      [
+        "سان بول الباحر",
+        35.9506,
+        14.4017
+      ],
+      [
+        "سليما",
+        35.9122,
+        14.5036
+      ],
+      [
+        "فاليتا",
+        35.8989,
+        14.5146
+      ],
+      [
+        "نكسار",
+        35.9317,
+        14.4436
+      ],
+      [
+        "زيطون",
+        35.8556,
+        14.5336
+      ],
+      [
+        "فغورا",
+        35.8731,
+        14.5236
+      ]
+    ]
+  },
+  {
+    "id": "VA",
+    "ar": "الفاتيكان",
+    "tz": "Europe/Vatican",
+    "cities": [
+      [
+        "مدينة الفاتيكان",
+        41.9029,
+        12.4534
+      ],
+      [
+        "ساحة القديس بطرس",
+        41.9022,
+        12.4568
+      ],
+      [
+        "كاتدرائية القديس بطرس",
+        41.9022,
+        12.4539
+      ],
+      [
+        "حدائق الفاتيكان",
+        41.9038,
+        12.4485
+      ],
+      [
+        "القصر الرسولي",
+        41.9036,
+        12.4545
+      ],
+      [
+        "كنيسة سيستينا",
+        41.9029,
+        12.4545
+      ],
+      [
+        "متاحف الفاتيكان",
+        41.9065,
+        12.4536
+      ],
+      [
+        "مكتبة الفاتيكان",
+        41.9047,
+        12.4547
+      ],
+      [
+        "بيت القديسة مارثا",
+        41.9014,
+        12.4528
+      ],
+      [
+        "ثكنات الحرس السويسري",
+        41.9042,
+        12.4561
+      ]
+    ]
+  }
+];
+</script>
+<script>
+/* أوروبا الجنوبية والشرقية والبلقان والبلطيق والقوقاز + قبرص وروسيا وكازاخستان
+   كل مدينة: [الاسم, خط العرض, خط الطول, المنطقة الزمنية (اختياري)] */
+window.EUROPE_B = [
+  {
+    "id": "GR",
+    "ar": "اليونان",
+    "tz": "Europe/Athens",
+    "cities": [
+      [
+        "أثينا",
+        37.9838,
+        23.7275
+      ],
+      [
+        "سالونيك",
+        40.6401,
+        22.9444
+      ],
+      [
+        "باتراس",
+        38.2466,
+        21.7346
+      ],
+      [
+        "هيراكليون",
+        35.3387,
+        25.1442
+      ],
+      [
+        "لاريسا",
+        39.639,
+        22.4191
+      ],
+      [
+        "فولوس",
+        39.3666,
+        22.9507
+      ],
+      [
+        "يانينا",
+        39.665,
+        20.8537
+      ],
+      [
+        "خانيا",
+        35.5138,
+        24.018
+      ],
+      [
+        "خالكيدا",
+        38.4637,
+        23.5994
+      ],
+      [
+        "أجرينيو",
+        38.621,
+        21.4078
+      ]
+    ]
+  },
+  {
+    "id": "CY",
+    "ar": "قبرص",
+    "tz": "Asia/Nicosia",
+    "cities": [
+      [
+        "نيقوسيا",
+        35.1856,
+        33.3823
+      ],
+      [
+        "ليماسول",
+        34.7071,
+        33.0226
+      ],
+      [
+        "لارنكا",
+        34.9229,
+        33.6233
+      ],
+      [
+        "ستروفولوس",
+        35.1405,
+        33.349
+      ],
+      [
+        "بافوس",
+        34.772,
+        32.4297
+      ],
+      [
+        "لاكاتاميا",
+        35.1,
+        33.3167
+      ],
+      [
+        "باراليمني",
+        35.0381,
+        33.9833
+      ],
+      [
+        "أراديبو",
+        34.95,
+        33.6
+      ],
+      [
+        "لاتسيا",
+        35.1,
+        33.3833
+      ],
+      [
+        "إنكومي",
+        35.15,
+        33.35
+      ]
+    ]
+  },
+  {
+    "id": "PL",
+    "ar": "بولندا",
+    "tz": "Europe/Warsaw",
+    "cities": [
+      [
+        "وارسو",
+        52.2297,
+        21.0122
+      ],
+      [
+        "كراكوف",
+        50.0647,
+        19.945
+      ],
+      [
+        "لودز",
+        51.7592,
+        19.456
+      ],
+      [
+        "فروتسواف",
+        51.1079,
+        17.0385
+      ],
+      [
+        "بوزنان",
+        52.4064,
+        16.9252
+      ],
+      [
+        "غدانسك",
+        54.352,
+        18.6466
+      ],
+      [
+        "شتتين",
+        53.4285,
+        14.5528
+      ],
+      [
+        "بيدغوشتش",
+        53.1235,
+        18.0084
+      ],
+      [
+        "لوبلين",
+        51.2465,
+        22.5684
+      ],
+      [
+        "بياويستوك",
+        53.1325,
+        23.1688
+      ]
+    ]
+  },
+  {
+    "id": "CZ",
+    "ar": "التشيك",
+    "tz": "Europe/Prague",
+    "cities": [
+      [
+        "براغ",
+        50.0755,
+        14.4378
+      ],
+      [
+        "برنو",
+        49.1951,
+        16.6068
+      ],
+      [
+        "أوسترافا",
+        49.8209,
+        18.2625
+      ],
+      [
+        "بلزن",
+        49.7384,
+        13.3736
+      ],
+      [
+        "ليبيريتس",
+        50.7663,
+        15.0543
+      ],
+      [
+        "أولوموك",
+        49.5938,
+        17.2509
+      ],
+      [
+        "تشيسكي بوديوفيتسه",
+        48.9745,
+        14.4743
+      ],
+      [
+        "هراديتس كرالوفه",
+        50.2104,
+        15.8328
+      ],
+      [
+        "أوستي ناد لابيم",
+        50.6611,
+        14.052
+      ],
+      [
+        "باردوبيتسه",
+        50.0343,
+        15.7812
+      ]
+    ]
+  },
+  {
+    "id": "SK",
+    "ar": "سلوفاكيا",
+    "tz": "Europe/Bratislava",
+    "cities": [
+      [
+        "براتيسلافا",
+        48.1486,
+        17.1077
+      ],
+      [
+        "كوشيتسه",
+        48.7164,
+        21.2611
+      ],
+      [
+        "بريشوف",
+        48.9984,
+        21.2339
+      ],
+      [
+        "جيلينا",
+        49.2231,
+        18.7394
+      ],
+      [
+        "نيترا",
+        48.3069,
+        18.0864
+      ],
+      [
+        "بانسكا بيستريتسا",
+        48.7363,
+        19.1462
+      ],
+      [
+        "ترنافا",
+        48.3774,
+        17.5883
+      ],
+      [
+        "مارتين",
+        49.0665,
+        18.9217
+      ],
+      [
+        "ترينتشين",
+        48.8945,
+        18.0444
+      ],
+      [
+        "بوبراد",
+        49.0614,
+        20.298
+      ]
+    ]
+  },
+  {
+    "id": "HU",
+    "ar": "المجر",
+    "tz": "Europe/Budapest",
+    "cities": [
+      [
+        "بودابست",
+        47.4979,
+        19.0402
+      ],
+      [
+        "ديبريسين",
+        47.5316,
+        21.6273
+      ],
+      [
+        "سيغيد",
+        46.253,
+        20.1414
+      ],
+      [
+        "ميشكولتس",
+        48.1035,
+        20.7784
+      ],
+      [
+        "بيتش",
+        46.0727,
+        18.2323
+      ],
+      [
+        "جيور",
+        47.6875,
+        17.6504
+      ],
+      [
+        "نيريجهازا",
+        47.9554,
+        21.7167
+      ],
+      [
+        "كيتشكيميت",
+        46.9062,
+        19.6913
+      ],
+      [
+        "ستولفيهرفار",
+        47.186,
+        18.4221
+      ],
+      [
+        "سومباتهيلي",
+        47.2307,
+        16.6218
+      ]
+    ]
+  },
+  {
+    "id": "RO",
+    "ar": "رومانيا",
+    "tz": "Europe/Bucharest",
+    "cities": [
+      [
+        "بوخارست",
+        44.4268,
+        26.1025
+      ],
+      [
+        "كلوج نابوكا",
+        46.7712,
+        23.6236
+      ],
+      [
+        "تيميشوارا",
+        45.7489,
+        21.2087
+      ],
+      [
+        "ياش",
+        47.1585,
+        27.6014
+      ],
+      [
+        "كونستانتا",
+        44.1598,
+        28.6348
+      ],
+      [
+        "كراديوفا",
+        44.3302,
+        23.7949
+      ],
+      [
+        "براشوف",
+        45.6427,
+        25.5887
+      ],
+      [
+        "غالاتس",
+        45.4353,
+        28.008
+      ],
+      [
+        "بلويشتي",
+        44.946,
+        26.036
+      ],
+      [
+        "أوراديا",
+        47.0465,
+        21.9189
+      ]
+    ]
+  },
+  {
+    "id": "BG",
+    "ar": "بلغاريا",
+    "tz": "Europe/Sofia",
+    "cities": [
+      [
+        "صوفيا",
+        42.6977,
+        23.3219
+      ],
+      [
+        "بلوفديف",
+        42.1354,
+        24.7453
+      ],
+      [
+        "فارنا",
+        43.2141,
+        27.9147
+      ],
+      [
+        "بورغاس",
+        42.5048,
+        27.4626
+      ],
+      [
+        "روسه",
+        43.8356,
+        25.9657
+      ],
+      [
+        "ستارا زاغورا",
+        42.4258,
+        25.6345
+      ],
+      [
+        "بليفن",
+        43.417,
+        24.6067
+      ],
+      [
+        "سليفين",
+        42.6817,
+        26.3229
+      ],
+      [
+        "دوبريتش",
+        43.5726,
+        27.8273
+      ],
+      [
+        "شومن",
+        43.2706,
+        26.9229
+      ]
+    ]
+  },
+  {
+    "id": "RS",
+    "ar": "صربيا",
+    "tz": "Europe/Belgrade",
+    "cities": [
+      [
+        "بلغراد",
+        44.7866,
+        20.4489
+      ],
+      [
+        "نوفي ساد",
+        45.2671,
+        19.8335
+      ],
+      [
+        "نيش",
+        43.3209,
+        21.8958
+      ],
+      [
+        "كراغويفاتش",
+        44.0128,
+        20.9114
+      ],
+      [
+        "سوبوتيتسا",
+        46.1,
+        19.6667
+      ],
+      [
+        "زرينيانين",
+        45.3816,
+        20.3905
+      ],
+      [
+        "بانتشيفو",
+        44.8708,
+        20.6403
+      ],
+      [
+        "تشاتشاك",
+        43.8914,
+        20.3497
+      ],
+      [
+        "كروشيفاتس",
+        43.58,
+        21.3339
+      ],
+      [
+        "كرالييفو",
+        43.7258,
+        20.6894
+      ]
+    ]
+  },
+  {
+    "id": "HR",
+    "ar": "كرواتيا",
+    "tz": "Europe/Zagreb",
+    "cities": [
+      [
+        "زغرب",
+        45.815,
+        15.9819
+      ],
+      [
+        "سبليت",
+        43.5081,
+        16.4402
+      ],
+      [
+        "رييكا",
+        45.3271,
+        14.4422
+      ],
+      [
+        "أوسييك",
+        45.555,
+        18.6955
+      ],
+      [
+        "زادار",
+        44.1194,
+        15.2314
+      ],
+      [
+        "بولا",
+        44.8666,
+        13.8496
+      ],
+      [
+        "سلافونسكي برود",
+        45.16,
+        18.0156
+      ],
+      [
+        "كارلوفاتس",
+        45.4929,
+        15.5553
+      ],
+      [
+        "فارازدين",
+        46.3044,
+        16.3378
+      ],
+      [
+        "شيبينيك",
+        43.735,
+        15.8952
+      ]
+    ]
+  },
+  {
+    "id": "BA",
+    "ar": "البوسنة والهرسك",
+    "tz": "Europe/Sarajevo",
+    "cities": [
+      [
+        "سراييفو",
+        43.8563,
+        18.4131
+      ],
+      [
+        "بانيا لوكا",
+        44.7722,
+        17.191
+      ],
+      [
+        "توزلا",
+        44.5384,
+        18.6671
+      ],
+      [
+        "زينيتسا",
+        44.2034,
+        17.9077
+      ],
+      [
+        "موستار",
+        43.3438,
+        17.8078
+      ],
+      [
+        "بيلجينا",
+        44.7569,
+        19.215
+      ],
+      [
+        "برتشكو",
+        44.8727,
+        18.8106
+      ],
+      [
+        "بريدور",
+        44.9799,
+        16.7139
+      ],
+      [
+        "دوبوي",
+        44.7349,
+        18.0843
+      ],
+      [
+        "تريبينيي",
+        42.7117,
+        18.3444
+      ]
+    ]
+  },
+  {
+    "id": "SI",
+    "ar": "سلوفينيا",
+    "tz": "Europe/Ljubljana",
+    "cities": [
+      [
+        "ليوبليانا",
+        46.0569,
+        14.5058
+      ],
+      [
+        "ماريبور",
+        46.5547,
+        15.6459
+      ],
+      [
+        "تسيليه",
+        46.2364,
+        15.2677
+      ],
+      [
+        "كراني",
+        46.2389,
+        14.3556
+      ],
+      [
+        "فيلينيي",
+        46.3592,
+        15.11
+      ],
+      [
+        "كوبر",
+        45.5481,
+        13.7302
+      ],
+      [
+        "نوفو ميستو",
+        45.8039,
+        15.1689
+      ],
+      [
+        "بتوي",
+        46.42,
+        15.87
+      ],
+      [
+        "ترببوليه",
+        46.155,
+        15.0536
+      ],
+      [
+        "كامنيك",
+        46.2256,
+        14.6122
+      ]
+    ]
+  },
+  {
+    "id": "MK",
+    "ar": "مقدونيا الشمالية",
+    "tz": "Europe/Skopje",
+    "cities": [
+      [
+        "سكوبيه",
+        41.9981,
+        21.4254
+      ],
+      [
+        "بيتولا",
+        41.0297,
+        21.3347
+      ],
+      [
+        "كومانوفو",
+        42.1322,
+        21.7144
+      ],
+      [
+        "بريليب",
+        41.345,
+        21.555
+      ],
+      [
+        "تيتوفو",
+        42.0097,
+        20.9715
+      ],
+      [
+        "فيليس",
+        41.7156,
+        21.7756
+      ],
+      [
+        "أوهريد",
+        41.1231,
+        20.8016
+      ],
+      [
+        "غوستيفار",
+        41.7958,
+        20.9089
+      ],
+      [
+        "شتيب",
+        41.7458,
+        22.1958
+      ],
+      [
+        "ستروميتسا",
+        41.4378,
+        22.6428
+      ]
+    ]
+  },
+  {
+    "id": "ME",
+    "ar": "الجبل الأسود",
+    "tz": "Europe/Podgorica",
+    "cities": [
+      [
+        "بودغوريتسا",
+        42.4304,
+        19.2594
+      ],
+      [
+        "نيكشيتش",
+        42.7731,
+        18.9445
+      ],
+      [
+        "هرتسيغ نوفي",
+        42.4531,
+        18.5375
+      ],
+      [
+        "بليفليا",
+        43.3567,
+        19.3578
+      ],
+      [
+        "بييلو بوليه",
+        43.0386,
+        19.7478
+      ],
+      [
+        "بار",
+        42.0937,
+        19.1003
+      ],
+      [
+        "تسيتينيه",
+        42.3931,
+        18.9114
+      ],
+      [
+        "بودفا",
+        42.2864,
+        18.84
+      ],
+      [
+        "كوتور",
+        42.4247,
+        18.7712
+      ],
+      [
+        "بيرانه",
+        42.8425,
+        19.8719
+      ]
+    ]
+  },
+  {
+    "id": "AL",
+    "ar": "ألبانيا",
+    "tz": "Europe/Tirane",
+    "cities": [
+      [
+        "تيرانا",
+        41.3275,
+        19.8187
+      ],
+      [
+        "دوريس",
+        41.3246,
+        19.4565
+      ],
+      [
+        "فلورا",
+        40.466,
+        19.4914
+      ],
+      [
+        "إلباسان",
+        41.1125,
+        20.0822
+      ],
+      [
+        "شكودرا",
+        42.0683,
+        19.5126
+      ],
+      [
+        "فييري",
+        40.7239,
+        19.5561
+      ],
+      [
+        "كورتشا",
+        40.6186,
+        20.7808
+      ],
+      [
+        "بيرات",
+        40.7058,
+        19.9522
+      ],
+      [
+        "لوشنيا",
+        40.9419,
+        19.705
+      ],
+      [
+        "كاميز",
+        41.3811,
+        19.7603
+      ]
+    ]
+  },
+  {
+    "id": "XK",
+    "ar": "كوسوفو",
+    "tz": "Europe/Belgrade",
+    "cities": [
+      [
+        "بريشتينا",
+        42.6629,
+        21.1655
+      ],
+      [
+        "بريزرين",
+        42.2139,
+        20.7397
+      ],
+      [
+        "فيريزاج",
+        42.3702,
+        21.1483
+      ],
+      [
+        "بيجا",
+        42.6593,
+        20.2883
+      ],
+      [
+        "جاكوفا",
+        42.3803,
+        20.4308
+      ],
+      [
+        "غيلان",
+        42.4635,
+        21.4694
+      ],
+      [
+        "ميتروفيتسا",
+        42.8914,
+        20.866
+      ],
+      [
+        "بودويفو",
+        42.9106,
+        21.1933
+      ],
+      [
+        "فوشتري",
+        42.8231,
+        20.9675
+      ],
+      [
+        "سوهاريكا",
+        42.3589,
+        20.825
+      ]
+    ]
+  },
+  {
+    "id": "MD",
+    "ar": "مولدوفا",
+    "tz": "Europe/Chisinau",
+    "cities": [
+      [
+        "كيشيناو",
+        47.0105,
+        28.8638
+      ],
+      [
+        "تيراسبول",
+        46.8403,
+        29.6433
+      ],
+      [
+        "بالتي",
+        47.754,
+        27.9184
+      ],
+      [
+        "بندر",
+        46.8228,
+        29.4714
+      ],
+      [
+        "ريبنيتسا",
+        47.7683,
+        29.0
+      ],
+      [
+        "كاهول",
+        45.9075,
+        28.1944
+      ],
+      [
+        "أونغيني",
+        47.2058,
+        27.7997
+      ],
+      [
+        "سوروكا",
+        48.155,
+        28.2869
+      ],
+      [
+        "أورهي",
+        47.3831,
+        28.8239
+      ],
+      [
+        "دوباساري",
+        47.2636,
+        29.1578
+      ]
+    ]
+  },
+  {
+    "id": "UA",
+    "ar": "أوكرانيا",
+    "tz": "Europe/Kyiv",
+    "cities": [
+      [
+        "كييف",
+        50.4501,
+        30.5234
+      ],
+      [
+        "خاركيف",
+        49.9935,
+        36.2304
+      ],
+      [
+        "أوديسا",
+        46.4825,
+        30.7233
+      ],
+      [
+        "دنيبرو",
+        48.4647,
+        35.0462
+      ],
+      [
+        "دونيتسك",
+        48.0159,
+        37.8028
+      ],
+      [
+        "زابوريجيا",
+        47.8388,
+        35.1396
+      ],
+      [
+        "لفيف",
+        49.8397,
+        24.0297
+      ],
+      [
+        "كريفي ريه",
+        47.9105,
+        33.3918
+      ],
+      [
+        "ميكولايف",
+        46.975,
+        31.9946
+      ],
+      [
+        "ماريوبول",
+        47.0971,
+        37.5434
+      ]
+    ]
+  },
+  {
+    "id": "BY",
+    "ar": "بيلاروسيا",
+    "tz": "Europe/Minsk",
+    "cities": [
+      [
+        "مينسك",
+        53.9006,
+        27.559
+      ],
+      [
+        "غوميل",
+        52.4345,
+        30.9754
+      ],
+      [
+        "موغيليف",
+        53.9,
+        30.3333
+      ],
+      [
+        "فيتيبسك",
+        55.1904,
+        30.2049
+      ],
+      [
+        "غرودنو",
+        53.6693,
+        23.8131
+      ],
+      [
+        "بريست",
+        52.0976,
+        23.7341
+      ],
+      [
+        "بابرويسك",
+        53.1384,
+        29.2214
+      ],
+      [
+        "بارانوفيتشي",
+        53.1327,
+        26.0139
+      ],
+      [
+        "بوريسوف",
+        54.2279,
+        28.505
+      ],
+      [
+        "بينسك",
+        52.1229,
+        26.0951
+      ]
+    ]
+  },
+  {
+    "id": "RU",
+    "ar": "روسيا",
+    "tz": "Europe/Moscow",
+    "cities": [
+      [
+        "موسكو",
+        55.7558,
+        37.6173
+      ],
+      [
+        "سانت بطرسبرغ",
+        59.9311,
+        30.3609
+      ],
+      [
+        "نوفوسيبيرسك",
+        55.0084,
+        82.9357,
+        "Asia/Novosibirsk"
+      ],
+      [
+        "يكاترينبورغ",
+        56.8389,
+        60.6057,
+        "Asia/Yekaterinburg"
+      ],
+      [
+        "قازان",
+        55.7879,
+        49.1233
+      ],
+      [
+        "نيجني نوفغورود",
+        56.2965,
+        43.9361
+      ],
+      [
+        "تشيليابينسك",
+        55.1644,
+        61.4368,
+        "Asia/Yekaterinburg"
+      ],
+      [
+        "سامارا",
+        53.1959,
+        50.1002,
+        "Europe/Samara"
+      ],
+      [
+        "أومسك",
+        54.9885,
+        73.3242,
+        "Asia/Omsk"
+      ],
+      [
+        "روستوف على الدون",
+        47.2357,
+        39.7015
+      ]
+    ]
+  },
+  {
+    "id": "EE",
+    "ar": "إستونيا",
+    "tz": "Europe/Tallinn",
+    "cities": [
+      [
+        "تالين",
+        59.437,
+        24.7536
+      ],
+      [
+        "تارتو",
+        58.378,
+        26.729
+      ],
+      [
+        "نارفا",
+        59.3797,
+        28.1791
+      ],
+      [
+        "بيرنو",
+        58.3859,
+        24.4971
+      ],
+      [
+        "كوهتلا-يارفه",
+        59.3986,
+        27.2731
+      ],
+      [
+        "فيلياندي",
+        58.3639,
+        25.59
+      ],
+      [
+        "راكفيري",
+        59.3469,
+        26.3558
+      ],
+      [
+        "مارادو",
+        59.0042,
+        25.0258
+      ],
+      [
+        "سيلاميه",
+        59.3992,
+        27.7633
+      ],
+      [
+        "كوريسارى",
+        58.2528,
+        22.4869
+      ]
+    ]
+  },
+  {
+    "id": "LV",
+    "ar": "لاتفيا",
+    "tz": "Europe/Riga",
+    "cities": [
+      [
+        "ريغا",
+        56.9496,
+        24.1052
+      ],
+      [
+        "داوغافبيلس",
+        55.8747,
+        26.5362
+      ],
+      [
+        "ليبايا",
+        56.5047,
+        21.0108
+      ],
+      [
+        "يلغافا",
+        56.65,
+        23.7214
+      ],
+      [
+        "يورمالا",
+        56.968,
+        23.7704
+      ],
+      [
+        "فنتسبيلس",
+        57.3894,
+        21.5606
+      ],
+      [
+        "ريزكني",
+        56.5101,
+        27.34
+      ],
+      [
+        "فالميرا",
+        57.541,
+        25.4264
+      ],
+      [
+        "ييكابلس",
+        56.4992,
+        25.8561
+      ],
+      [
+        "أوغري",
+        56.8156,
+        24.6042
+      ]
+    ]
+  },
+  {
+    "id": "LT",
+    "ar": "ليتوانيا",
+    "tz": "Europe/Vilnius",
+    "cities": [
+      [
+        "فيلنيوس",
+        54.6872,
+        25.2797
+      ],
+      [
+        "كاوناس",
+        54.8985,
+        23.9036
+      ],
+      [
+        "كلايبيدا",
+        55.7033,
+        21.1443
+      ],
+      [
+        "شياولياي",
+        55.9349,
+        23.3137
+      ],
+      [
+        "بانيفيجيس",
+        55.7348,
+        24.3575
+      ],
+      [
+        "ألايتوس",
+        54.3963,
+        24.0459
+      ],
+      [
+        "ماريامبولي",
+        54.5599,
+        23.3541
+      ],
+      [
+        "مازيكياي",
+        56.3167,
+        22.3333
+      ],
+      [
+        "يونافا",
+        55.0833,
+        24.2833
+      ],
+      [
+        "أوتينا",
+        55.4977,
+        25.599
+      ]
+    ]
+  },
+  {
+    "id": "GE",
+    "ar": "جورجيا",
+    "tz": "Asia/Tbilisi",
+    "cities": [
+      [
+        "تبليسي",
+        41.7151,
+        44.8271
+      ],
+      [
+        "باتومي",
+        41.6168,
+        41.6367
+      ],
+      [
+        "كوتايسي",
+        42.2679,
+        42.6946
+      ],
+      [
+        "روستافي",
+        41.5495,
+        45.005
+      ],
+      [
+        "غوري",
+        41.9842,
+        44.1158
+      ],
+      [
+        "زوغديدي",
+        42.5088,
+        41.8709
+      ],
+      [
+        "بوتي",
+        42.1462,
+        41.6718
+      ],
+      [
+        "خاشوري",
+        41.9944,
+        43.5989
+      ],
+      [
+        "سامترديا",
+        42.1544,
+        42.3361
+      ],
+      [
+        "سيناكي",
+        42.27,
+        42.06
+      ]
+    ]
+  },
+  {
+    "id": "AM",
+    "ar": "أرمينيا",
+    "tz": "Asia/Yerevan",
+    "cities": [
+      [
+        "يريفان",
+        40.1792,
+        44.4991
+      ],
+      [
+        "غيومري",
+        40.7894,
+        43.8475
+      ],
+      [
+        "فانادزور",
+        40.8128,
+        44.4883
+      ],
+      [
+        "فاغارشابات",
+        40.1578,
+        44.2989
+      ],
+      [
+        "هرازدان",
+        40.4989,
+        44.7658
+      ],
+      [
+        "أبوفيان",
+        40.2736,
+        44.6256
+      ],
+      [
+        "كابان",
+        39.2075,
+        46.4058
+      ],
+      [
+        "أرمافير",
+        40.1536,
+        43.8747
+      ],
+      [
+        "غافار",
+        40.3586,
+        45.1267
+      ],
+      [
+        "غوريس",
+        39.5117,
+        46.3367
+      ]
+    ]
+  },
+  {
+    "id": "AZ",
+    "ar": "أذربيجان",
+    "tz": "Asia/Baku",
+    "cities": [
+      [
+        "باكو",
+        40.4093,
+        49.8671
+      ],
+      [
+        "غنجة",
+        40.6828,
+        46.3606
+      ],
+      [
+        "سومقايت",
+        40.5897,
+        49.6686
+      ],
+      [
+        "مينغاتشيفير",
+        40.7703,
+        47.0489
+      ],
+      [
+        "لنكران",
+        38.7536,
+        48.8511
+      ],
+      [
+        "شيرفان",
+        39.9378,
+        48.9206
+      ],
+      [
+        "نخجوان",
+        39.2089,
+        45.4122
+      ],
+      [
+        "شكي",
+        41.1919,
+        47.1706
+      ],
+      [
+        "يفلاخ",
+        40.6197,
+        47.15
+      ],
+      [
+        "قوبا",
+        41.3611,
+        48.5128
+      ]
+    ]
+  },
+  {
+    "id": "KZ",
+    "ar": "كازاخستان",
+    "tz": "Asia/Almaty",
+    "cities": [
+      [
+        "ألماتي",
+        43.222,
+        76.8512
+      ],
+      [
+        "أستانا",
+        51.1694,
+        71.4491
+      ],
+      [
+        "شيمكنت",
+        42.3417,
+        69.5901
+      ],
+      [
+        "أكتوبي",
+        50.2839,
+        57.167,
+        "Asia/Aqtobe"
+      ],
+      [
+        "قراغندي",
+        49.8019,
+        73.1021
+      ],
+      [
+        "تاراز",
+        42.9,
+        71.3667
+      ],
+      [
+        "أوسكيمين",
+        49.95,
+        82.6167
+      ],
+      [
+        "بافلودار",
+        52.3,
+        76.95
+      ],
+      [
+        "سيماي",
+        50.4111,
+        80.2275
+      ],
+      [
+        "أتيراو",
+        47.1167,
+        51.8833,
+        "Asia/Atyrau"
+      ]
+    ]
+  }
+];
+</script>
+<script>
+/* كندا والولايات المتحدة الأمريكية - لكل مدينة منطقتها الزمنية
+   كل مدينة: [الاسم, خط العرض, خط الطول, المنطقة الزمنية] */
+window.NA_COUNTRIES = [
+  {
+    "id": "CA",
+    "ar": "كندا",
+    "tz": "America/Toronto",
+    "cities": [
+      [
+        "تورنتو",
+        43.6532,
+        -79.3832,
+        "America/Toronto"
+      ],
+      [
+        "مونتريال",
+        45.5017,
+        -73.5673,
+        "America/Toronto"
+      ],
+      [
+        "كالغاري",
+        51.0447,
+        -114.0719,
+        "America/Edmonton"
+      ],
+      [
+        "أوتاوا",
+        45.4215,
+        -75.6972,
+        "America/Toronto"
+      ],
+      [
+        "إدمونتون",
+        53.5461,
+        -113.4938,
+        "America/Edmonton"
+      ],
+      [
+        "وينيبيغ",
+        49.8951,
+        -97.1384,
+        "America/Winnipeg"
+      ],
+      [
+        "ميسيساغا",
+        43.589,
+        -79.6441,
+        "America/Toronto"
+      ],
+      [
+        "فانكوفر",
+        49.2827,
+        -123.1207,
+        "America/Vancouver"
+      ],
+      [
+        "برامبتون",
+        43.7315,
+        -79.7624,
+        "America/Toronto"
+      ],
+      [
+        "هاميلتون",
+        43.2557,
+        -79.8711,
+        "America/Toronto"
+      ]
+    ]
+  },
+  {
+    "id": "US",
+    "ar": "الولايات المتحدة الأمريكية",
+    "tz": "America/New_York",
+    "cities": [
+      [
+        "نيويورك",
+        40.7128,
+        -74.006,
+        "America/New_York"
+      ],
+      [
+        "لوس أنجلوس",
+        34.0522,
+        -118.2437,
+        "America/Los_Angeles"
+      ],
+      [
+        "شيكاغو",
+        41.8781,
+        -87.6298,
+        "America/Chicago"
+      ],
+      [
+        "هيوستن",
+        29.7604,
+        -95.3698,
+        "America/Chicago"
+      ],
+      [
+        "فينيكس",
+        33.4484,
+        -112.074,
+        "America/Phoenix"
+      ],
+      [
+        "فيلادلفيا",
+        39.9526,
+        -75.1652,
+        "America/New_York"
+      ],
+      [
+        "سان أنطونيو",
+        29.4241,
+        -98.4936,
+        "America/Chicago"
+      ],
+      [
+        "سان دييغو",
+        32.7157,
+        -117.1611,
+        "America/Los_Angeles"
+      ],
+      [
+        "دالاس",
+        32.7767,
+        -96.797,
+        "America/Chicago"
+      ],
+      [
+        "سان خوسيه",
+        37.3382,
+        -121.8863,
+        "America/Los_Angeles"
+      ]
+    ]
+  }
+];
+</script>
+<script>
+/* دمج وترتيب قوائم دول الميلاد ودول السنوية معاً:
+   كل دول أوروبا + دول الشرق الأوسط + الولايات المتحدة الأمريكية + كندا + بريطانيا
+   جميع الدول تحتوي على أهم 10 مدن حسب الكثافة السكانية، مرتبة أبجدياً بالعربية. */
+(function () {
+  var all = [].concat(
+    window.ME_COUNTRIES,
+    window.EUROPE_A,
+    window.EUROPE_B,
+    window.NA_COUNTRIES
+  );
+  all.sort(function (a, b) { return a.ar.localeCompare(b.ar, "ar"); });
+  window.BIRTH_COUNTRIES = all;
+  window.TARGET_COUNTRIES = all;
+})();
+</script>
+<script>
+/* المحرك الفلكي - يعمل بالكامل داخل المتصفح بدون اتصال
+   - مواقع الكواكب: عناصر مدارية تقريبية (JPL 1800-2050) + تصحيح المبادرة الاعتدالية
+   - القمر: عناصر مدارية + حدود الاضطراب الرئيسية (دقة ~0.2 درجة)
+   - العودة الشمسية: تكرار عددي حتى تتطابق الشمس مع موقعها الميلادي
+   - البيوت: نظام "كل برج بيت" (Whole Sign) */
+(function (root) {
+  "use strict";
+  var D2R = Math.PI / 180, R2D = 180 / Math.PI;
+  function n360(x) { x = x % 360; return x < 0 ? x + 360 : x; }
+  function n180(x) { x = n360(x); return x > 180 ? x - 360 : x; }
+
+  var SIGNS = ["الحمل","الثور","الجوزاء","السرطان","الأسد","العذراء","الميزان","العقرب","القوس","الجدي","الدلو","الحوت"];
+  var BODIES = [
+    { key: "sun", ar: "الشمس" }, { key: "moon", ar: "القمر" }, { key: "mercury", ar: "عطارد" },
+    { key: "venus", ar: "الزهرة" }, { key: "mars", ar: "المريخ" }, { key: "jupiter", ar: "المشتري" },
+    { key: "saturn", ar: "زحل" }, { key: "uranus", ar: "أورانوس" }, { key: "neptune", ar: "نبتون" },
+    { key: "pluto", ar: "بلوتو" }
+  ];
+
+  /* a, da, e, de, I, dI, L, dL, varpi, dvarpi, Omega, dOmega (لكل قرن) */
+  var EL = {
+    mercury: [0.38709927,0.00000037,0.20563593,0.00001906,7.00497902,-0.00594749,252.25032350,149472.67411175,77.45779628,0.16047689,48.33076593,-0.12534081],
+    venus:   [0.72333566,0.00000390,0.00677672,-0.00004107,3.39467605,-0.00078890,181.97909950,58517.81538729,131.60246718,0.00268329,76.67984255,-0.27769418],
+    earth:   [1.00000261,0.00000562,0.01671123,-0.00004392,-0.00001531,-0.01294668,100.46457166,35999.37244981,102.93768193,0.32327364,0,0],
+    mars:    [1.52371034,0.00001847,0.09339410,0.00007882,1.84969142,-0.00813131,-4.55343205,19140.30268499,-23.94362959,0.44441088,49.55953891,-0.29257343],
+    jupiter: [5.20288700,-0.00011607,0.04838624,-0.00013253,1.30439695,-0.00183714,34.39644051,3034.74612775,14.72847983,0.21252668,100.47390909,0.20469106],
+    saturn:  [9.53667594,-0.00125060,0.05386179,-0.00050991,2.48599187,0.00193609,49.95424423,1222.49362201,92.59887831,-0.41897216,113.66242448,-0.28867794],
+    uranus:  [19.18916464,-0.00196176,0.04725744,-0.00004397,0.77263783,-0.00242939,313.23810451,428.48202785,170.95427630,0.40805281,74.01692503,0.04240589],
+    neptune: [30.06992276,0.00026291,0.00859048,0.00005105,1.77004347,0.00035372,-55.12002969,218.45945325,44.96476227,-0.32241464,131.78422574,-0.00508664],
+    pluto:   [39.48211675,-0.00031596,0.24882730,0.00005170,17.14001206,0.00004818,238.92903833,145.20780515,224.06891629,-0.04062942,110.30393684,-0.01183482]
+  };
+
+  function jdFromMs(ms) { return ms / 86400000 + 2440587.5; }
+  function msFromJd(jd) { return (jd - 2440587.5) * 86400000; }
+
+  function kepler(Mdeg, e) {
+    var M = Mdeg * D2R, E = M + e * Math.sin(M);
+    for (var i = 0; i < 40; i++) {
+      var d = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+      E -= d;
+      if (Math.abs(d) < 1e-12) break;
+    }
+    return E;
+  }
+
+  function helio(name, T) {
+    var p = EL[name];
+    var a = p[0] + p[1] * T, e = p[2] + p[3] * T, I = p[4] + p[5] * T,
+        L = p[6] + p[7] * T, w = p[8] + p[9] * T, O = p[10] + p[11] * T;
+    var om = w - O, M = n180(L - w), E = kepler(M, e);
+    var xp = a * (Math.cos(E) - e), yp = a * Math.sqrt(1 - e * e) * Math.sin(E);
+    var co = Math.cos(om * D2R), so = Math.sin(om * D2R), cO = Math.cos(O * D2R),
+        sO = Math.sin(O * D2R), cI = Math.cos(I * D2R), sI = Math.sin(I * D2R);
+    return [
+      (co * cO - so * sO * cI) * xp + (-so * cO - co * sO * cI) * yp,
+      (co * sO + so * cO * cI) * xp + (-so * sO + co * cO * cI) * yp,
+      (so * sI) * xp + (co * sI) * yp
+    ];
+  }
+
+  function moonLon(jd) {
+    var d = jd - 2451543.5;
+    var N = n360(125.1228 - 0.0529538083 * d), i = 5.1454, w = n360(318.0634 + 0.1643573223 * d),
+        a = 60.2666, e = 0.054900, M = n360(115.3654 + 13.0649929509 * d);
+    var E = kepler(M, e);
+    var xv = a * (Math.cos(E) - e), yv = a * Math.sqrt(1 - e * e) * Math.sin(E);
+    var v = Math.atan2(yv, xv) * R2D, r = Math.sqrt(xv * xv + yv * yv);
+    var vw = (v + w) * D2R, Nr = N * D2R, ir = i * D2R;
+    var xh = r * (Math.cos(Nr) * Math.cos(vw) - Math.sin(Nr) * Math.sin(vw) * Math.cos(ir));
+    var yh = r * (Math.sin(Nr) * Math.cos(vw) + Math.cos(Nr) * Math.sin(vw) * Math.cos(ir));
+    var lon = Math.atan2(yh, xh) * R2D;
+    var Ms = n360(356.0470 + 0.9856002585 * d), ws = 282.9404 + 4.70935e-5 * d;
+    var Ls = Ms + ws, Lm = M + w + N, D = Lm - Ls, F = Lm - N;
+    function s(x) { return Math.sin(x * D2R); }
+    lon += -1.274 * s(M - 2 * D) + 0.658 * s(2 * D) - 0.186 * s(Ms) - 0.059 * s(2 * M - 2 * D)
+         - 0.057 * s(M - 2 * D + Ms) + 0.053 * s(M + 2 * D) + 0.046 * s(2 * D - Ms)
+         + 0.041 * s(M - Ms) - 0.035 * s(D) - 0.031 * s(M + Ms) - 0.015 * s(2 * F - 2 * D)
+         + 0.011 * s(M - 4 * D);
+    return n360(lon);
+  }
+
+  function meanNode(jd) { return n360(125.1228 - 0.0529538083 * (jd - 2451543.5)); }
+
+  function lonOf(key, jd) {
+    if (key === "moon") return moonLon(jd);
+    var T = (jd - 2451545.0) / 36525;
+    var earth = helio("earth", T), v;
+    if (key === "sun") v = [-earth[0], -earth[1], -earth[2]];
+    else { var p = helio(key, T); v = [p[0] - earth[0], p[1] - earth[1], p[2] - earth[2]]; }
+    return n360(Math.atan2(v[1], v[0]) * R2D + 1.39697128 * T + 0.0003086 * T * T);
+  }
+
+  function isRetro(key, jd) {
+    if (key === "sun" || key === "moon") return false;
+    return n180(lonOf(key, jd + 0.5) - lonOf(key, jd - 0.5)) < 0;
+  }
+
+  /* الطالع والوسط السماء */
+  function angles(jd, lat, lon) {
+    var T = (jd - 2451545.0) / 36525;
+    var gmst = 280.46061837 + 360.98564736629 * (jd - 2451545.0) + 0.000387933 * T * T - T * T * T / 38710000;
+    var th = n360(gmst + lon) * D2R;
+    var eps = (23.439291 - 0.0130042 * T) * D2R;
+    var phi = lat * D2R;
+    var asc = Math.atan2(Math.cos(th), -(Math.sin(th) * Math.cos(eps) + Math.tan(phi) * Math.sin(eps))) * R2D;
+    var mc = Math.atan2(Math.sin(th), Math.cos(th) * Math.cos(eps)) * R2D;
+    return { asc: n360(asc), mc: n360(mc) };
+  }
+
+  /* ---------- المناطق الزمنية عبر Intl (قاعدة بيانات المتصفح، تعمل دون اتصال) ---------- */
+  function tzOffsetMs(utcMs, tz) {
+    try {
+      var f = new Intl.DateTimeFormat("en-US", {
+        timeZone: tz, hourCycle: "h23", year: "numeric", month: "numeric", day: "numeric",
+        hour: "numeric", minute: "numeric", second: "numeric"
+      });
+      var o = {};
+      f.formatToParts(new Date(utcMs)).forEach(function (p) { o[p.type] = parseInt(p.value, 10); });
+      var asUtc = Date.UTC(o.year, o.month - 1, o.day, o.hour % 24, o.minute, o.second);
+      return asUtc - Math.floor(utcMs / 1000) * 1000;
+    } catch (e) { return null; }
+  }
+  function localToUtcMs(y, m, d, h, mi, tz, lon) {
+    var guess = Date.UTC(y, m - 1, d, h, mi);
+    var off = tzOffsetMs(guess, tz);
+    if (off === null) return guess - (lon / 15) * 3600000; // توقيت محلي تقريبي
+    var utc = guess - off;
+    var off2 = tzOffsetMs(utc, tz);
+    if (off2 !== null && off2 !== off) utc = guess - off2;
+    return utc;
+  }
+  function utcToLocalParts(utcMs, tz, lon) {
+    var off = tzOffsetMs(utcMs, tz);
+    var approx = off === null;
+    if (approx) off = (lon / 15) * 3600000;
+    var dt = new Date(utcMs + off);
+    return {
+      year: dt.getUTCFullYear(), month: dt.getUTCMonth() + 1, day: dt.getUTCDate(),
+      hour: dt.getUTCHours(), minute: dt.getUTCMinutes(), offsetMin: Math.round(off / 60000)
+    };
+  }
+
+  /* ---------- العودة الشمسية ---------- */
+  function solarReturnJD(natalSunLon, targetYear, month, day) {
+    var jd = jdFromMs(Date.UTC(targetYear, month - 1, Math.min(day, 28), 12, 0));
+    if (day > 28) jd += day - 28;
+    for (var i = 0; i < 60; i++) {
+      var diff = n180(natalSunLon - lonOf("sun", jd));
+      jd += diff / 0.9856;
+      if (Math.abs(diff) < 1e-7) break;
+    }
+    return jd;
+  }
+
+  var ASPECTS = [
+    { key: "conj", ar: "اقتران", angle: 0, orb: 8 },
+    { key: "sext", ar: "تسديس", angle: 60, orb: 5 },
+    { key: "sqr", ar: "تربيع", angle: 90, orb: 7 },
+    { key: "trine", ar: "تثليث", angle: 120, orb: 7 },
+    { key: "opp", ar: "مقابلة", angle: 180, orb: 8 }
+  ];
+  function findAspect(lonA, lonB) {
+    var sep = Math.abs(n180(lonA - lonB));
+    for (var i = 0; i < ASPECTS.length; i++) {
+      var orb = Math.abs(sep - ASPECTS[i].angle);
+      if (orb <= ASPECTS[i].orb) return { type: ASPECTS[i], orb: orb };
+    }
+    return null;
+  }
+
+  /* ---------- الحساب الرئيسي ----------
+     in: { birth:{y,m,d,h,mi,unknown,city:{lat,lon,tz}}, targetYear, targetCity:{lat,lon,tz} } */
+  function compute(inp) {
+    var b = inp.birth, t = inp.targetCity;
+    var h = b.unknown ? 12 : b.h, mi = b.unknown ? 0 : b.mi;
+    var natalUtc = localToUtcMs(b.y, b.m, b.d, h, mi, b.city.tz, b.city.lon);
+    var natalJD = jdFromMs(natalUtc);
+    var natalSun = lonOf("sun", natalJD);
+    var srJD = solarReturnJD(natalSun, inp.targetYear, b.m, b.d);
+    var srUtc = msFromJd(srJD);
+    var local = utcToLocalParts(srUtc, t.tz, t.lon);
+
+    var ascLon, mcLon = null, ascApprox = false;
+    if (b.unknown) {            // الطالع = البرج الشمسي (درجة الشمس الميلادية كنقطة الطالع)
+      ascLon = natalSun; ascApprox = true;
+    } else {
+      var an = angles(srJD, t.lat, t.lon);
+      ascLon = an.asc; mcLon = an.mc;
+    }
+    var ascSign = Math.floor(ascLon / 30);
+
+    var planets = BODIES.map(function (bd) {
+      var lon = lonOf(bd.key, srJD);
+      var sign = Math.floor(lon / 30);
+      return {
+        key: bd.key, ar: bd.ar, lon: lon, sign: sign, signAr: SIGNS[sign],
+        deg: lon - sign * 30, house: ((sign - ascSign + 12) % 12) + 1, retro: isRetro(bd.key, srJD)
+      };
+    });
+    var nodeLon = meanNode(srJD), nSign = Math.floor(nodeLon / 30);
+    planets.push({
+      key: "node", ar: "العقدة الشمالية", lon: nodeLon, sign: nSign, signAr: SIGNS[nSign],
+      deg: nodeLon - nSign * 30, house: ((nSign - ascSign + 12) % 12) + 1, retro: true
+    });
+
+    var aspects = [];
+    planets.forEach(function (p) {
+      var a = findAspect(p.lon, ascLon);
+      if (a && !(b.unknown && p.key === "sun")) aspects.push({ planet: p.key, type: a.type.key, typeAr: a.type.ar, orb: a.orb });
+    });
+
+    return {
+      ascLon: ascLon, ascSign: ascSign, ascSignAr: SIGNS[ascSign], ascDeg: ascLon - ascSign * 30,
+      mcLon: mcLon, ascApprox: ascApprox, unknownTime: !!b.unknown,
+      natalSun: natalSun, natalSunSignAr: SIGNS[Math.floor(natalSun / 30)],
+      returnJD: srJD, returnUtcMs: srUtc, returnLocal: local,
+      planets: planets, aspects: aspects, signs: SIGNS
+    };
+  }
+
+  root.Astro = {
+    compute: compute, lonOf: lonOf, angles: angles, jdFromMs: jdFromMs, localToUtcMs: localToUtcMs,
+    n360: n360, n180: n180, SIGNS: SIGNS, BODIES: BODIES, ASPECTS: ASPECTS, findAspect: findAspect,
+    utcToLocalParts: utcToLocalParts
+  };
+  if (typeof module !== "undefined" && module.exports) module.exports = root.Astro;
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>
+/* نصوص التفسير (قواعد التنجيم الغربي) - قابلة للتعديل
+   صيغة الجنس: {ذكر|أنثى} ، والمتغيرات: {th} موضوع البيت، {n} رقم البيت، {st} طابع البرج،
+   {pl} الكوكب، {asp} الاتصال، {orb} الفرق، {ph} وصف الاتصال، {dom} مجال الكوكب، {rl} حاكم الطالع */
+(function (root) {
+  var D = {};
+
+  D.HOUSES = [null,
+    "الذات والمظهر والبدايات الجديدة", "المال والدخل والممتلكات", "التواصل والأشقاء والسفر القصير والتعلّم",
+    "البيت والأسرة والعقارات والجذور", "الحب والإبداع والأبناء والترفيه", "العمل اليومي والصحة والخدمة",
+    "الشراكات والزواج والعلاقات الجادة", "المال المشترك والديون والتحولات العميقة",
+    "السفر البعيد والدراسة العليا والمعتقدات", "المهنة والمكانة والإنجاز العلني",
+    "الصداقات والآمال والمشاريع الجماعية", "العزلة والباطن واللاوعي والأمور الخفية"
+  ];
+
+  D.SIGN_STYLE = [
+    "المبادرة والحماس", "الثبات والتروّي", "الفضول وتعدد الخيارات", "الحساسية والاهتمام بالأقربين",
+    "الثقة والرغبة في الظهور", "الدقة والتحليل", "التوازن والبحث عن الانسجام", "العمق والحدّة",
+    "التفاؤل والتطلّع بعيداً", "الجدية والتخطيط", "الاستقلالية والتجديد", "الحدس والتعاطف"
+  ];
+
+  /* حاكم الطالع حسب البرج */
+  D.RULERS = ["mars","venus","mercury","moon","sun","mercury","venus","mars","jupiter","saturn","saturn","jupiter"];
+
+  D.DOMAIN = {
+    mercury: "التواصل والعقود والأوراق", venus: "العلاقات والمال والمقتنيات",
+    mars: "الطاقة والمبادرات والخلافات", jupiter: "الفرص والتوسع والتعلم",
+    saturn: "الالتزامات والمسؤوليات", uranus: "التغيير المفاجئ والتحرر",
+    neptune: "الأحلام والتوقعات والالتباس", pluto: "التحولات العميقة والنفوذ"
+  };
+
+  D.EV = {
+    sun: "تتركز أضواء السنة على {th}؛ فالشمس في البيت {n} وسيغلب على أحداثه طابع {st}.",
+    moon: "تتقلب المشاعر وتتكرر المواقف المرتبطة بمجال {th} (القمر في البيت {n}) بطابع {st}، وقد تصلك أخبار تخص هذا المجال.",
+    mercury: "تكثر المحادثات والأوراق والقرارات الذهنية في مجال {th} (عطارد في البيت {n}) مع طابع {st}.",
+    venus: "تأتي لحظات انسجام وفرص مريحة في {th} (الزهرة في البيت {n}) بطابع {st}، وقد تتحسن العلاقات والمكاسب المرتبطة به.",
+    mars: "ترتفع الحرارة والنشاط في {th} (المريخ في البيت {n})، فتتوقع تحركات سريعة ومنافسة أو خلافات بطابع {st}.",
+    jupiter: "تُفتح فرص توسع وحظ في {th} (المشتري في البيت {n})، وهو من أقوى مواضع النمو هذه السنة بطابع {st}.",
+    saturn: "تفرض السنة التزامات واختبارات صبر في {th} (زحل في البيت {n})، والمكافأة لمن ينضبط ويثابر، بطابع {st}.",
+    uranus: "تحدث تغييرات مفاجئة وانعطافات غير متوقعة في {th} (أورانوس في البيت {n}) بطابع {st}.",
+    neptune: "يلفّ الغموض والحلم مجال {th} (نبتون في البيت {n}) فتختلط الرؤية بالتمني، بطابع {st}.",
+    pluto: "تجري تحولات عميقة وإعادة بناء في {th} (بلوتو في البيت {n}) بطابع {st}، وما ينتهي هناك يمهّد لبداية أقوى.",
+    node: "تشير العقدة الشمالية إلى {th} (البيت {n}) كاتجاه نمو واختيار مصيري هذه السنة."
+  };
+
+  D.ADV = {
+    sun: "وجّه{|ي} طاقتك وقراراتك الكبرى نحو {th}، فهو المجال الذي تُكافأ فيه الثقة بالنفس والمبادرة.",
+    moon: "اعتن{|ي} بتوازنك النفسي وراقب{|ي} مزاجك في ما يخص {th}، ولا تتخذ{|ي} قراراً مصيرياً في لحظة انفعال.",
+    mercury: "دوّن{|ي} اتفاقاتك واقرأ{|ي} العقود جيداً، وأتقن{|ي} لغة الحوار في شؤون {th}.",
+    venus: "اغتنم{|ي} فرص الود والتقارب في {th}، وبادر{|ي} بالعطاء اللطيف فهو يعود إليك مضاعفاً.",
+    mars: "حوّل{|ي} طاقتك إلى عمل منظم أو رياضة في {th}، وخذ{|ي} المبادرة بجرأة محسوبة.",
+    jupiter: "توسّع{|ي} بحكمة في {th}؛ تعلّم{|ي} وسافر{|ي} وكوّن{|ي} علاقات جديدة تفتح لك أبواباً.",
+    saturn: "ثابر{|ي} على الانضباط في {th} ولا تبحث{|ي} عن حلول سريعة؛ الجهد المنظم هو ما سيصمد.",
+    uranus: "تقبّل{|ي} التغيير في {th} وجرّب{|ي} أساليب جديدة بدل التمسك بالقديم.",
+    neptune: "استمع{|ي} إلى حدسك في {th} لكن تحقق{|ي} من الوقائع قبل أن تبني عليها.",
+    pluto: "تخلّص{|ي} مما استنفد دوره في {th} وواجه{|ي} الحقيقة بشجاعة، فالتجديد الحقيقي يبدأ من هناك.",
+    node: "اجعل{|ي} {th} بوصلتك لهذه السنة وخذ{|ي} خطوات صغيرة ثابتة نحوه."
+  };
+
+  D.WARN = {
+    sun: "لا تبالغ{|ي} في إثبات الذات في {th}؛ فالعناد أو الغرور قد يكلّفك علاقة أو فرصة.",
+    moon: "احذر{|ي} التسرع العاطفي في {th}؛ فالمزاج المتقلب قد يُظهر الأمور أكبر أو أصغر من حقيقتها.",
+    mercury: "احذر{|ي} سوء الفهم أو توقيع أوراق دون مراجعة في {th}، وتجنّب{|ي} الإشاعات والكلام المتسرع.",
+    venus: "احذر{|ي} الإسراف والمجاملة الزائدة في {th}، ولا تدع{|ي} حب الراحة يؤجل قراراً ضرورياً.",
+    mars: "احذر{|ي} الغضب والتهور والمجازفة في {th}؛ فالصدام المتسرع قد يترك أثراً يصعب إصلاحه.",
+    jupiter: "احذر{|ي} المبالغة في الوعود والتفاؤل المفرط في {th}؛ فالتوسع بلا حساب قد يتحول إلى عبء.",
+    saturn: "احذر{|ي} الإحباط أو الجمود في {th}؛ فالتأخير هنا اختبار صبر وليس إغلاقاً للباب.",
+    uranus: "احذر{|ي} القرارات الانفعالية والانقلابات المفاجئة في {th}؛ فقد تهدم أساساً ما زلت بحاجة إليه.",
+    neptune: "احذر{|ي} الأوهام والالتباس وغموض الوعود في {th}، ولا تثق{|ي} بما لا يمكن التحقق منه.",
+    pluto: "احذر{|ي} الرغبة في السيطرة وصراعات النفوذ في {th}؛ فالتشبث بما انتهى يطيل الألم.",
+    node: "احذر{|ي} الارتداد إلى العادات القديمة في {th}؛ فالمألوف مريح لكنه لا يقودك إلى النمو."
+  };
+
+  /* اتصالات كواكب السنوية بالطالع (البيت الأول) */
+  D.ASP_GOOD = {
+    sun: "حيوية وثقة وحضور اجتماعي واضح", moon: "انسجام عاطفي وتجاوب الناس معك",
+    mercury: "وضوح ذهني ونجاح في التواصل والدراسة والمفاوضات", venus: "جاذبية وانسجام في العلاقات ومكاسب مريحة",
+    mars: "طاقة وجرأة وقدرة على إنجاز المهام", jupiter: "حظ وفرص نمو وتأييد من الآخرين",
+    saturn: "نضج وثبات وبناء متين يدوم", uranus: "تجدد وانفتاح على فرص غير تقليدية",
+    neptune: "إلهام وحدس وتعاطف ورؤية فنية", pluto: "قوة داخلية وقدرة على إعادة ابتكار الذات",
+    node: "توجيه مصيري نحو لقاءات وفرص ذات معنى"
+  };
+  D.ASP_HARD = {
+    sun: "توتر في الأنا وصدام مع أصحاب السلطة وإجهاد", moon: "تقلب مزاجي وحساسية زائدة",
+    mercury: "سوء فهم وتشتت وضغط ذهني", venus: "اضطراب في العلاقات وإسراف أو تردد في القرارات",
+    mars: "حدّة وعصبية وصدامات بسبب التسرع", jupiter: "مبالغة وتبذير وتوقعات أكبر من الواقع",
+    saturn: "ثقل ومسؤوليات وشعور بالتقييد", uranus: "اضطراب وتقلبات مفاجئة وتمرد",
+    neptune: "ضبابية وتشتت وقابلية للخداع", pluto: "ضغوط عميقة وصراع على النفوذ وتحولات قسرية",
+    node: "ضغط للتغيير يصعب تجاهله"
+  };
+  D.ASP_EV_GOOD = "{pl} في {asp} مع الطالع (فرق {orb}°)، وعنوان هذه المرحلة: {ph}.";
+  D.ASP_EV_HARD = "{pl} في {asp} مع الطالع (فرق {orb}°)، وعنوان هذه المرحلة المتوترة: {ph}.";
+  D.ASP_ADV_GOOD = "استثمر{|ي} تناغم {pl} مع طالعك ({asp}) بإطلاق خطط جديدة؛ فهذه الفترة عنوانها: {ph}.";
+  D.ASP_ADV_HARD = "تعامل{|ي} بوعي مع ضغط {pl} على طالعك ({asp}) ونظّم{|ي} وقتك وانفعالك؛ فعنوان هذا الضغط: {ph}.";
+  D.ASP_WARN_GOOD = "لا تتكل{|ي} على حسن الحظ وحده رغم تناغم {pl} مع الطالع؛ فالفرصة تحتاج إلى متابعة وجهد.";
+  D.ASP_WARN_HARD = "انتبه{|ي} لتوتر {pl} ({asp} الطالع)؛ فعنوانه: {ph}.";
+
+  /* حاكم الطالع */
+  D.RULER_EV = "حاكم الطالع ({rl}) في البيت {n} ({th}): هذا ميدان الطاقة والاهتمام الأول لك في هذه السنة.";
+  D.RULER_ADV = "اجعل{|ي} {th} أولوية السنة، فحاكم طالعك ({rl}) يقودك إليه.";
+  D.RULER_WARN = "لا تهمل{|ي} باقي مجالات حياتك وأنت تركّز على {th}؛ فحاكم الطالع يشدّك نحوه بقوة.";
+
+  /* التراجع */
+  D.RETRO_EV = "{pl} راجع في برج {sg}: عودة إلى ملفات قديمة في مجال {th}، وتأخير أو إعادة نظر في {dom}.";
+  D.RETRO_ADV = "راجع{|ي} شؤون {dom} بهدوء قبل البدء بجديد، فتراجع {pl} يكافئ من يعيد النظر.";
+  D.RETRO_WARN = "تجنّب{|ي} الحسم النهائي في شؤون {dom} أثناء فترات تراجع {pl}؛ فقد تتبدل المعطيات.";
+
+  root.AstroText = D;
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>
+/* محرك التفسير: يحوّل الخارطة السنوية إلى 10 أحداث + 10 نصائح + 10 تحذيرات */
+(function (root) {
+  "use strict";
+  var T = root.AstroText;
+
+  var BASE = { sun: 6, moon: 6, saturn: 5.5, jupiter: 5.5, mars: 5, venus: 5, mercury: 4.5, pluto: 3.5, uranus: 3.5, neptune: 3, node: 4 };
+  var TENS = { mars: 5, saturn: 5, pluto: 4.5, uranus: 4, neptune: 4, mercury: 2.5, moon: 2.5, sun: 2, venus: 2, jupiter: 2, node: 2.5 };
+  var MALEFIC = { mars: 1, saturn: 1, pluto: 1, uranus: 1, neptune: 1 };
+  var RETRO_W = { mercury: 3.5, venus: 3.5, mars: 4, jupiter: 3, saturn: 3.5, uranus: 1.5, neptune: 1.5, pluto: 1.5 };
+
+  function fill(tpl, v) {
+    return tpl.replace(/\{(th|n|st|sg|pl|asp|orb|ph|dom|rl)\}/g, function (_, k) { return v[k]; });
+  }
+  function gender(s, g) {
+    return s.replace(/\{([^{}|]*)\|([^{}|]*)\}/g, function (_, m, f) { return g === "f" ? f : m; });
+  }
+  function houseBonus(h) { return (h === 1 || h === 4 || h === 7 || h === 10) ? 2 : (h === 2 || h === 5 || h === 8 || h === 11) ? 1 : 0; }
+  function houseTension(h) { return (h === 6 || h === 8 || h === 12) ? 2.5 : h === 7 ? 1 : h === 4 ? 0.5 : 0; }
+
+  function planetByKey(chart, k) { for (var i = 0; i < chart.planets.length; i++) if (chart.planets[i].key === k) return chart.planets[i]; }
+
+  function buildPool(chart) {
+    var pool = [], byKey = {};
+    chart.planets.forEach(function (p) { byKey[p.key] = p; });
+
+    // 1) كل كوكب في بيته
+    chart.planets.forEach(function (p) {
+      var v = { th: T.HOUSES[p.house], n: p.house, st: T.SIGN_STYLE[p.sign], pl: p.ar, sg: p.signAr };
+      pool.push({
+        id: "h-" + p.key,
+        score: BASE[p.key] + houseBonus(p.house),
+        tens: TENS[p.key] + houseTension(p.house),
+        ev: fill(T.EV[p.key], v), adv: fill(T.ADV[p.key], v), warn: fill(T.WARN[p.key], v)
+      });
+    });
+
+    // 2) اتصالات الكواكب بالطالع (البيت الأول)
+    chart.aspects.forEach(function (a) {
+      var p = byKey[a.planet];
+      var hard = a.type === "sqr" || a.type === "opp" || (a.type === "conj" && MALEFIC[a.planet]);
+      var v = { pl: p.ar, asp: a.typeAr, orb: a.orb.toFixed(1), ph: (hard ? T.ASP_HARD : T.ASP_GOOD)[a.planet] };
+      pool.push({
+        id: "a-" + a.planet,
+        score: 6.5 + (8 - a.orb) / 2 + (BASE[a.planet] > 5 ? 0.5 : 0),
+        tens: hard ? 5 + (8 - a.orb) / 2 + (TENS[a.planet] / 2) : 0.5,
+        ev: fill(hard ? T.ASP_EV_HARD : T.ASP_EV_GOOD, v),
+        adv: fill(hard ? T.ASP_ADV_HARD : T.ASP_ADV_GOOD, v),
+        warn: fill(hard ? T.ASP_WARN_HARD : T.ASP_WARN_GOOD, v)
+      });
+    });
+
+    // 3) حاكم الطالع
+    var rk = T.RULERS[chart.ascSign], rp = byKey[rk];
+    var rv = { rl: rp.ar, n: rp.house, th: T.HOUSES[rp.house] };
+    pool.push({
+      id: "ruler", score: 7.5 + houseBonus(rp.house) / 2,
+      tens: (rp.house === 6 || rp.house === 8 || rp.house === 12) ? 4 : 1.5,
+      ev: fill(T.RULER_EV, rv), adv: fill(T.RULER_ADV, rv), warn: fill(T.RULER_WARN, rv)
+    });
+
+    // 4) الكواكب الراجعة
+    chart.planets.forEach(function (p) {
+      if (!p.retro || !RETRO_W[p.key]) return;
+      var v = { pl: p.ar, sg: p.signAr, th: T.HOUSES[p.house], dom: T.DOMAIN[p.key] };
+      pool.push({
+        id: "r-" + p.key, score: RETRO_W[p.key] + houseBonus(p.house) / 2,
+        tens: RETRO_W[p.key] + 1.5 + houseTension(p.house),
+        ev: fill(T.RETRO_EV, v), adv: fill(T.RETRO_ADV, v), warn: fill(T.RETRO_WARN, v)
+      });
+    });
+    return pool;
+  }
+
+  function top(pool, scoreFn, field, n, g) {
+    return pool.slice().sort(function (a, b) { return scoreFn(b) - scoreFn(a); })
+      .slice(0, n).map(function (it) { return gender(it[field], g); });
+  }
+
+  function fmt2(n) { return (n < 10 ? "0" : "") + n; }
+
+  function interpret(chart, input) {
+    var g = input.gender === "f" ? "f" : "m";
+    var pool = buildPool(chart);
+    var sun = planetByKey(chart, "sun"), moon = planetByKey(chart, "moon");
+    var L = chart.returnLocal;
+    var when = L.year + "/" + fmt2(L.month) + "/" + fmt2(L.day) + " الساعة " + fmt2(L.hour) + ":" + fmt2(L.minute);
+
+    var summary = [];
+    summary.push("تبدأ سنويتك لعام " + input.targetYear + " لحظة عودة الشمس إلى موقعها الميلادي في " + when +
+      " بتوقيت " + input.targetCity.name + " (" + input.targetCountry + ").");
+    summary.push(chart.unknownTime
+      ? "بما أن ساعة الميلاد غير معروفة، اعتُبر البرج الشمسي (" + chart.ascSignAr + ") هو الطالع والبيت الأول، وفُحصت اتصالات كواكب السنوية بدرجة الشمس الميلادية. وبذلك تبقى لحظة العودة تقريبية بمقدار نصف يوم تقريباً."
+      : "الطالع السنوي في برج " + chart.ascSignAr + " (" + chart.ascDeg.toFixed(1) + "°)، وتُحسب البيوت بنظام كل برج بيت.");
+    summary.push("الشمس السنوية في البيت " + sun.house + " (" + T.HOUSES[sun.house] + ")، والقمر السنوي في برج " + moon.signAr +
+      " بالبيت " + moon.house + " (" + T.HOUSES[moon.house] + ").");
+
+    return {
+      summary: summary,
+      events: top(pool, function (i) { return i.score; }, "ev", 10, g),
+      advice: top(pool, function (i) { return i.score + i.tens * 0.3; }, "adv", 10, g),
+      warnings: top(pool, function (i) { return i.tens + i.score * 0.05; }, "warn", 10, g)
+    };
+  }
+
+  root.AstroInterpret = { interpret: interpret, buildPool: buildPool };
+  if (typeof module !== "undefined" && module.exports) module.exports = root.AstroInterpret;
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>
+/* اسأل استرو رادار - منطق الواجهة (بدون أي اتصال خارجي) */
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var SIGN_GLYPH = ["♈","♉","♊","♋","♌","♍","♎","♏","♐","♑","♒","♓"];
+  var PL_GLYPH = { sun: "☉", moon: "☽", mercury: "☿", venus: "♀", mars: "♂", jupiter: "♃", saturn: "♄", uranus: "♅", neptune: "♆", pluto: "♇", node: "☊" };
+  var MONTHS = ["كانون الثاني","شباط","آذار","نيسان","أيار","حزيران","تموز","آب","أيلول","تشرين الأول","تشرين الثاني","كانون الأول"];
+  var MALEFIC = { mars: 1, saturn: 1, pluto: 1, uranus: 1, neptune: 1 };
+  var NOW_YEAR = new Date().getFullYear();
+  var MIN_BIRTH = 1920, MAX_TARGET = 2100;
+
+  function el(tag, attrs, text) {
+    var e = document.createElementNS(SVGNS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function h(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function opt(sel, value, label) { var o = document.createElement("option"); o.value = value; o.textContent = label; sel.appendChild(o); }
+  function p2(n) { return (n < 10 ? "0" : "") + n; }
+  function polar(cx, cy, r, deg) { var a = deg * Math.PI / 180; return [cx + r * Math.cos(a), cy - r * Math.sin(a)]; }
+
+  /* ---------- قرص الرادار في الواجهة ---------- */
+  function buildDial() {
+    var s = $("dial"), c = 160, i, j;
+    [152, 118, 84, 50, 16].forEach(function (r) { s.appendChild(el("circle", { cx: c, cy: c, r: r, "class": "ring" })); });
+    s.appendChild(el("line", { x1: 8, y1: c, x2: 312, y2: c, "class": "tick" }));
+    s.appendChild(el("line", { x1: c, y1: 8, x2: c, y2: 312, "class": "tick" }));
+    for (i = 0; i < 72; i++) {
+      var a = polar(c, c, 152, i * 5), b = polar(c, c, i % 6 === 0 ? 144 : 148, i * 5);
+      s.appendChild(el("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1], "class": "tick" }));
+    }
+    for (i = 0; i < 12; i++) {
+      var g = polar(c, c, 135, 90 - i * 30 - 15);
+      s.appendChild(el("text", { x: g[0], y: g[1], "class": "glyph" }, SIGN_GLYPH[i] + "︎"));
+    }
+    [[0.62, 40], [0.35, 200], [0.78, 290]].forEach(function (b) {
+      var q = polar(c, c, 152 * b[0], b[1]);
+      s.appendChild(el("circle", { cx: q[0], cy: q[1], r: 4, "class": "blip" }));
+    });
+    var sweep = el("g", { "class": "sweep" });
+    for (j = 0; j < 14; j++) {
+      var a1 = 90 + j * 4, a2 = 90 + (j + 1) * 4;
+      var p1 = polar(c, c, 152, a1), p2_ = polar(c, c, 152, a2);
+      sweep.appendChild(el("path", {
+        d: "M" + c + " " + c + " L" + p1[0] + " " + p1[1] + " A152 152 0 0 0 " + p2_[0] + " " + p2_[1] + " Z",
+        fill: "#31c3cf", "fill-opacity": (0.5 * (1 - j / 14)).toFixed(3)
+      }));
+    }
+    sweep.appendChild(el("line", { x1: c, y1: c, x2: c, y2: 8, stroke: "#8ff0f5", "stroke-width": 2 }));
+    s.appendChild(sweep);
+  }
+
+  /* ---------- تعبئة القوائم ---------- */
+  function fillRange(sel, from, to, desc, placeholder) {
+    sel.innerHTML = "";
+    opt(sel, "", placeholder);
+    var i;
+    if (desc) for (i = from; i >= to; i--) opt(sel, i, i);
+    else for (i = from; i <= to; i++) opt(sel, i, i);
+  }
+  function fillCities(sel, country) {
+    sel.innerHTML = "";
+    if (!country) { opt(sel, "", "اختر الدولة أولاً"); sel.disabled = true; return; }
+    opt(sel, "", "اختر المدينة");
+    country.cities.forEach(function (c, i) { opt(sel, i, c[0]); });
+    sel.disabled = false;
+  }
+  function byId(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]; return null; }
+
+  function setupForm() {
+    fillRange($("bday"), 1, 31, false, "اليوم");
+    $("bmonth").innerHTML = ""; opt($("bmonth"), "", "الشهر");
+    MONTHS.forEach(function (m, i) { opt($("bmonth"), i + 1, m); });
+    fillRange($("byear"), NOW_YEAR, MIN_BIRTH, true, "السنة");
+    fillRange($("bhour"), 0, 23, false, "--");
+    for (var i = 1; i < $("bhour").options.length; i++) $("bhour").options[i].textContent = p2(+$("bhour").options[i].value);
+    fillRange($("bmin"), 0, 59, false, "--");
+    for (i = 1; i < $("bmin").options.length; i++) $("bmin").options[i].textContent = p2(+$("bmin").options[i].value);
+
+    // دولة الميلاد (تشمل كل دول أوروبا، الشرق الأوسط، أمريكا، كندا، بريطانيا)
+    var bc = $("bcountry");
+    opt(bc, "", "اختر الدولة");
+    window.BIRTH_COUNTRIES.forEach(function (c) { opt(bc, c.id, c.ar); });
+    bc.addEventListener("change", function () {
+      fillCities($("bcity"), byId(window.BIRTH_COUNTRIES, bc.value));
+    });
+
+    // دولة السنوية
+    var tc = $("tcountry");
+    opt(tc, "", "اختر الدولة");
+    window.TARGET_COUNTRIES.forEach(function (c) { opt(tc, c.id, c.ar); });
+    tc.addEventListener("change", function () {
+      fillCities($("tcity"), byId(window.TARGET_COUNTRIES, tc.value));
+    });
+
+    refreshTargetYears();
+    $("byear").addEventListener("change", refreshTargetYears);
+    $("notime").addEventListener("change", function () {
+      var off = $("notime").checked;
+      $("bhour").disabled = off; $("bmin").disabled = off;
+      if (off) { $("bhour").value = ""; $("bmin").value = ""; }
+    });
+
+    // زر تحميل ملف HTML المباشر
+    var dlBtn = $("download-app-btn");
+    if (dlBtn) {
+      dlBtn.addEventListener("click", function () {
+        var htmlContent = "<!doctype html>\n" + document.documentElement.outerHTML;
+        var blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "ask_astro_radar.html";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    }
+  }
+
+  function refreshTargetYears() {
+    var by = parseInt($("byear").value, 10), keep = $("tyear").value;
+    var from = isNaN(by) ? MIN_BIRTH + 1 : by + 1;
+    fillRange($("tyear"), from, MAX_TARGET, false, "اختر السنة");
+    var want = keep && +keep >= from ? keep : (NOW_YEAR >= from ? NOW_YEAR : "");
+    $("tyear").value = String(want);
+  }
+
+  /* ---------- التحقق: لا يُقبل إلا ما في النموذج ---------- */
+  function validate() {
+    var errs = [], bad = [];
+    function fail(id, msg) { errs.push(msg); bad.push(id); }
+    var name = $("name").value.replace(/\s+/g, " ").trim();
+    if (!/^[؀-ۿA-Za-zÀ-ɏ ]{2,30}$/.test(name) || name.split(" ").length > 4)
+      fail("f-name", "اكتب اسمك فقط (من حرفين إلى 30 حرفاً، بدون أرقام أو رموز أو أسئلة).");
+    var gender = (document.querySelector("input[name=gender]:checked") || {}).value;
+    if (!gender) fail("f-gender", "اختر الجنس.");
+
+    var d = parseInt($("bday").value, 10), m = parseInt($("bmonth").value, 10), y = parseInt($("byear").value, 10);
+    if (isNaN(d) || isNaN(m) || isNaN(y)) fail("f-bdate", "أكمل تاريخ الميلاد (اليوم والشهر والسنة).");
+    else {
+      var dt = new Date(Date.UTC(y, m - 1, d));
+      if (dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) fail("f-bdate", "تاريخ الميلاد غير موجود في التقويم.");
+      else if (dt.getTime() > Date.now()) fail("f-bdate", "تاريخ الميلاد لا يمكن أن يكون في المستقبل.");
+    }
+    
+    var bc = byId(window.BIRTH_COUNTRIES, $("bcountry").value);
+    var bcity = bc && $("bcity").value !== "" ? bc.cities[+$("bcity").value] : null;
+    if (!bc) fail("f-bcountry", "اختر دولة الميلاد.");
+    else if (!bcity) fail("f-bcity", "اختر مدينة الميلاد.");
+
+    var unknown = $("notime").checked, hh = $("bhour").value, mm = $("bmin").value;
+    if (!unknown && (hh === "" || mm === "")) fail("f-btime", "اختر ساعة ودقيقة الميلاد أو فعّل «عدم معرفة الساعة».");
+
+    var ty = parseInt($("tyear").value, 10);
+    if (isNaN(ty)) fail("f-tyear", "اختر سنة السنوية.");
+    else if (!isNaN(y) && ty <= y) fail("f-tyear", "سنة السنوية يجب أن تكون بعد سنة الميلاد.");
+    var tc = byId(window.TARGET_COUNTRIES, $("tcountry").value);
+    var tcity = tc && $("tcity").value !== "" ? tc.cities[+$("tcity").value] : null;
+    if (!tc) fail("f-tcountry", "اختر دولة السنوية.");
+    else if (!tcity) fail("f-tcity", "اختر مدينة السنوية.");
+
+    document.querySelectorAll(".field.bad").forEach(function (f) { f.classList.remove("bad"); });
+    bad.forEach(function (id) { $(id).classList.add("bad"); });
+    if (errs.length) return { errors: errs };
+    return {
+      value: {
+        name: name, gender: gender, bc: bc, bcity: bcity, tc: tc, tcity: tcity, targetYear: ty,
+        birth: { y: y, m: m, d: d, h: unknown ? 12 : +hh, mi: unknown ? 0 : +mm, unknown: unknown,
+                 city: { lat: bcity[1], lon: bcity[2], tz: bcity[3] || bc.tz } }
+      }
+    };
+  }
+
+  /* ---------- رسم الخارطة السنوية ---------- */
+  function drawWheel(chart) {
+    var W = 500, c = 250, R1 = 238, R2 = 192, R3 = 128;
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + W, "class": "wheel", role: "img", "aria-label": "الخارطة السنوية بنظام كل برج بيت" });
+    var ink = "#0d2b31", line = "#9db0a9", i;
+    var base = chart.ascSign * 30;
+    function ang(lon) { return 180 + (((lon - base) % 360) + 360) % 360; }
+
+    svg.appendChild(el("circle", { cx: c, cy: c, r: R1, fill: "#fafcfa", stroke: ink, "stroke-width": 2 }));
+    var houseNums = [];
+    for (i = 0; i < 12; i++) {
+      var s = (chart.ascSign + i) % 12, a0 = 180 + i * 30, a1 = a0 + 30;
+      var P = [polar(c, c, R1, a0), polar(c, c, R2, a0), polar(c, c, R2, a1), polar(c, c, R1, a1)];
+      svg.appendChild(el("path", {
+        d: "M" + P[0] + " A" + R1 + " " + R1 + " 0 0 0 " + P[3] + " L" + P[2] + " A" + R2 + " " + R2 + " 0 0 1 " + P[1] + " Z",
+        fill: i % 2 ? "#e9f0ed" : "#f6faf8", stroke: line, "stroke-width": 1
+      }));
+      var g = polar(c, c, (R1 + R2) / 2, a0 + 15);
+      svg.appendChild(el("text", { x: g[0], y: g[1], "text-anchor": "middle", "dominant-baseline": "central", "font-size": 24, fill: ink }, SIGN_GLYPH[s] + "︎"));
+      var hn = polar(c, c, R3 - 24, a0 + 15);
+      houseNums.push(el("text", { x: hn[0], y: hn[1], "text-anchor": "middle", "dominant-baseline": "central", "font-size": 17, "font-weight": 700, fill: "#6b8189", "font-family": "Segoe UI, Tahoma, sans-serif" }, String(i + 1)));
+      var sp = polar(c, c, R3, a0), sp2 = polar(c, c, R2, a0);
+      svg.appendChild(el("line", { x1: sp[0], y1: sp[1], x2: sp2[0], y2: sp2[1], stroke: line, "stroke-width": 1 }));
+    }
+    svg.appendChild(el("circle", { cx: c, cy: c, r: R2, fill: "none", stroke: ink, "stroke-width": 1.2 }));
+    svg.appendChild(el("circle", { cx: c, cy: c, r: R3, fill: "#fff", stroke: ink, "stroke-width": 1.2 }));
+    houseNums.forEach(function (n) { svg.appendChild(n); });
+
+    // محور الطالع
+    var aa = ang(chart.ascLon), ap = polar(c, c, R3, aa), ao = polar(c, c, R1 + 2, aa);
+    // خطوط اتصال الكواكب بالطالع
+    chart.aspects.forEach(function (a) {
+      var pl = chart.planets.filter(function (x) { return x.key === a.planet; })[0];
+      var hard = a.type === "sqr" || a.type === "opp" || (a.type === "conj" && MALEFIC[a.planet]);
+      if (a.type === "conj") return;
+      var q = polar(c, c, R3, ang(pl.lon));
+      svg.appendChild(el("line", { x1: ap[0], y1: ap[1], x2: q[0], y2: q[1], stroke: hard ? "#7b2d5f" : "#138a94", "stroke-width": 1.6, "stroke-dasharray": a.type === "sext" ? "5 4" : "" }));
+    });
+    svg.appendChild(el("line", { x1: ap[0], y1: ap[1], x2: ao[0], y2: ao[1], stroke: "#e9a820", "stroke-width": 4 }));
+    svg.appendChild(el("text", { x: 46, y: ao[1] - 14, "text-anchor": "middle", "font-size": 15, "font-weight": 800, fill: "#8a5d00", "font-family": "Segoe UI, Tahoma, sans-serif" }, "الطالع"));
+
+    // الكواكب مع تفريق الرموز المتقاربة
+    var list = chart.planets.map(function (p) { return { p: p, a: ang(p.lon) - 180, shown: 0 }; })
+      .sort(function (x, y) { return x.a - y.a; });
+    list.forEach(function (it) { it.shown = it.a; });
+    for (var pass = 0; pass < 6; pass++)
+      for (i = 1; i < list.length; i++)
+        if (list[i].shown - list[i - 1].shown < 11) list[i].shown = list[i - 1].shown + 11;
+    list.forEach(function (it) {
+      var real = polar(c, c, R3, 180 + it.a), tick = polar(c, c, R3 + 9, 180 + it.a);
+      svg.appendChild(el("line", { x1: real[0], y1: real[1], x2: tick[0], y2: tick[1], stroke: ink, "stroke-width": 1.4 }));
+      var gp = polar(c, c, R3 + 31, 180 + it.shown);
+      svg.appendChild(el("text", { x: gp[0], y: gp[1], "text-anchor": "middle", "dominant-baseline": "central", "font-size": 24, fill: it.p.key === "node" ? "#4a6168" : ink, "font-weight": 700 }, PL_GLYPH[it.p.key] + "︎"));
+      var dp = polar(c, c, R3 + 54, 180 + it.shown);
+      svg.appendChild(el("text", { x: dp[0], y: dp[1], "text-anchor": "middle", "dominant-baseline": "central", "font-size": 11, fill: it.p.retro && it.p.key !== "node" ? "#7b2d5f" : "#4a6168", "font-family": "Segoe UI, Tahoma, sans-serif" },
+        Math.floor(it.p.deg) + "°" + (it.p.retro && it.p.key !== "node" ? "R" : "")));
+    });
+    return svg;
+  }
+
+  function planetTable(chart) {
+    var t = h("table", "pl"), thead = h("thead"), tr = h("tr");
+    ["الكوكب", "البرج", "الدرجة", "البيت", "الحركة"].forEach(function (x) { tr.appendChild(h("th", null, x)); });
+    thead.appendChild(tr); t.appendChild(thead);
+    var tb = h("tbody");
+    chart.planets.forEach(function (p) {
+      var r = h("tr");
+      r.appendChild(h("td", null, PL_GLYPH[p.key] + "︎ " + p.ar));
+      r.appendChild(h("td", null, p.signAr));
+      r.appendChild(h("td", null, p.deg.toFixed(1) + "°"));
+      r.appendChild(h("td", null, String(p.house)));
+      var mv = h("td", p.retro && p.key !== "node" ? "rx" : null, p.key === "node" ? "—" : p.retro ? "راجع" : "مباشر");
+      r.appendChild(mv); tb.appendChild(r);
+    });
+    t.appendChild(tb); return t;
+  }
+
+  function listBlock(cls, title, sub, items) {
+    var sec = h("section", "block " + cls);
+    sec.appendChild(h("h3", null, title));
+    sec.appendChild(h("p", "sub", sub));
+    var ol = h("ol");
+    items.forEach(function (t) { ol.appendChild(h("li", null, t)); });
+    sec.appendChild(ol); return sec;
+  }
+
+  function render(v, chart, out) {
+    var box = $("result"); box.innerHTML = ""; box.hidden = false;
+    var L = chart.returnLocal;
+    var sign = L.offsetMin >= 0 ? "+" : "-", oh = Math.floor(Math.abs(L.offsetMin) / 60), om = Math.abs(L.offsetMin) % 60;
+
+    box.appendChild(h("div", "print-only", "اسأل استرو رادار — تحليل الخارطة السنوية"));
+    var head = h("div", "report-head");
+    var h2 = h("h2", null, "سنوية " + v.name + " لعام " + v.targetYear);
+    h2.tabIndex = -1; h2.id = "result-title";
+    head.appendChild(h2);
+    head.appendChild(h("p", null, "مولود" + (v.gender === "f" ? "ة" : "") + " في " + v.bcity[0] + " (" + v.bc.ar + ") بتاريخ " +
+      v.birth.y + "/" + p2(v.birth.m) + "/" + p2(v.birth.d) + (v.birth.unknown ? "، الساعة غير معروفة" : " الساعة " + p2(v.birth.h) + ":" + p2(v.birth.mi))));
+    box.appendChild(head);
+
+    var facts = h("div", "facts");
+    [["لحظة العودة الشمسية", L.year + "/" + p2(L.month) + "/" + p2(L.day) + " — " + p2(L.hour) + ":" + p2(L.minute)],
+     ["مكان السنوية", v.tcity[0] + "، " + v.tc.ar + " (UTC" + sign + p2(oh) + (om ? ":" + p2(om) : ":00") + ")"],
+     ["الطالع (البيت الأول)", "برج " + chart.ascSignAr + (chart.unknownTime ? " (البرج الشمسي)" : " " + chart.ascDeg.toFixed(1) + "°")]
+    ].forEach(function (f) {
+      var d = h("div", "fact"); d.appendChild(h("b", null, f[0])); d.appendChild(h("span", null, f[1])); facts.appendChild(d);
+    });
+    box.appendChild(facts);
+
+    var sm = h("div", "summary");
+    out.summary.forEach(function (t) { sm.appendChild(h("p", null, t)); });
+    box.appendChild(sm);
+
+    var zone = h("div", "chartzone");
+    var left = h("div"); left.appendChild(drawWheel(chart));
+    var lg = h("div", "legend");
+    lg.innerHTML = '<span><i style="border-color:#138a94"></i>اتصال متناغم بالطالع</span><span><i style="border-color:#7b2d5f"></i>اتصال متوتر بالطالع</span>';
+    left.appendChild(lg);
+    var right = h("div"); right.appendChild(planetTable(chart));
+    zone.appendChild(left); zone.appendChild(right);
+    box.appendChild(zone);
+
+    box.appendChild(listBlock("events", "الأحداث العشرة المتوقعة", "مرتبة من الأقوى تأثيراً في خارطة السنة.", out.events));
+    box.appendChild(listBlock("advice", "النصائح العشر للسنوية", "خطوات عملية تنسجم مع مواضع الكواكب.", out.advice));
+    box.appendChild(listBlock("warnings", "التحذيرات العشرة", "نقاط تستدعي الحذر خلال هذه السنة.", out.warnings));
+    box.appendChild(h("p", "note", "القراءة رمزية للاسترشاد وفق قواعد التنجيم الغربي ولا تحدد المصير. " +
+      (chart.unknownTime ? "ولأن ساعة الميلاد غير معروفة، فالنتائج تقريبية خصوصاً في مواضع البيوت." : "")));
+
+    var act = h("div", "result-actions");
+    var pb = h("button", "btn", "طباعة النتائج"); pb.type = "button"; pb.addEventListener("click", function () { window.print(); });
+    var nb = h("button", "btn alt", "تحليل جديد"); nb.type = "button";
+    nb.addEventListener("click", function () {
+      box.hidden = true; box.innerHTML = ""; $("form").reset();
+      fillCities($("bcity"), null); fillCities($("tcity"), null);
+      refreshTargetYears(); window.scrollTo({ top: 0 }); $("name").focus();
+    });
+    act.appendChild(pb); act.appendChild(nb); box.appendChild(act);
+
+    box.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    h2.focus({ preventScroll: true });
+  }
+
+  /* ---------- الإرسال ---------- */
+  function onSubmit(ev) {
+    ev.preventDefault();
+    var box = $("errors"), r = validate();
+    if (r.errors) {
+      box.innerHTML = ""; var ul = h("ul");
+      r.errors.forEach(function (t) { ul.appendChild(h("li", null, t)); });
+      box.appendChild(ul); box.hidden = false;
+      var first = document.querySelector(".field.bad"); if (first) first.scrollIntoView({ block: "center" });
+      return;
+    }
+    box.hidden = true;
+    var v = r.value;
+    try {
+      var input = {
+        birth: v.birth, targetYear: v.targetYear, gender: v.gender, targetCountry: v.tc.ar,
+        targetCity: { lat: v.tcity[1], lon: v.tcity[2], tz: v.tcity[3] || v.tc.tz, name: v.tcity[0] }
+      };
+      var chart = window.Astro.compute(input);
+      var out = window.AstroInterpret.interpret(chart, input);
+      render(v, chart, out);
+    } catch (e) {
+      box.textContent = "تعذر إتمام الحساب. راجع المدخلات وحاول مرة أخرى.";
+      box.hidden = false;
+    }
+  }
+
+  buildDial();
+  setupForm();
+  $("form").addEventListener("submit", onSubmit);
+})();
+</script>
+</body>
+</html>
