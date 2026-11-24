@@ -1,10 +1,9 @@
-import json
 from pathlib import Path
 import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="اسأل استرو رادار | عرض شاشة كاملة",
+    page_title="اسأل استرو رادار",
     page_icon="🔭",
     layout="wide",
     initial_sidebar_state="collapsed",
@@ -12,9 +11,15 @@ st.set_page_config(
 
 HTML_FILENAME = "Full_ask_astro_radar.html"
 
+DEVICE_PROFILES = {
+    "كمبيوتر": {"width": "100%", "height": 1220, "max_width": "100%"},
+    "تابلت": {"width": "820px", "height": 1260, "max_width": "820px"},
+    "مبايل": {"width": "410px", "height": 1340, "max_width": "410px"},
+}
 
-def load_html_file(filename: str) -> tuple[str | None, str]:
-    """يبحث عن ملف HTML في مجلد التطبيق الحالي أو المجلدات المجاورة ويعيد محتواه."""
+
+def load_html_file(filename: str) -> str | None:
+    """يبحث عن ملف العرض ويعيد محتواه دون كشف اسمه في الواجهة."""
     base_dir = Path(__file__).resolve().parent
     candidate_paths = [
         base_dir / filename,
@@ -24,23 +29,19 @@ def load_html_file(filename: str) -> tuple[str | None, str]:
     ]
     for path in candidate_paths:
         if path.exists() and path.is_file():
-            return path.read_text(encoding="utf-8"), str(path)
+            return path.read_text(encoding="utf-8")
 
-    # بحث احتياطي في المجلدات الفرعية القريبة
     for match in base_dir.rglob(filename):
         if match.is_file():
-            return match.read_text(encoding="utf-8"), str(match)
+            return match.read_text(encoding="utf-8")
 
-    return None, str(candidate_paths[0])
+    return None
 
 
-html_content, resolved_path = load_html_file(HTML_FILENAME)
+html_content = load_html_file(HTML_FILENAME)
 
-if "cinema_mode" not in st.session_state:
-    st.session_state.cinema_mode = True
-
-if "viewer_height" not in st.session_state:
-    st.session_state.viewer_height = 1150
+if "device_mode" not in st.session_state:
+    st.session_state.device_mode = "كمبيوتر"
 
 if "reload_nonce" not in st.session_state:
     st.session_state.reload_nonce = 0
@@ -56,12 +57,12 @@ st.markdown(
         font-family: 'Cairo', 'Tajawal', sans-serif;
       }
 
+      /* خلفية بنفسجية غامقة متدرجة */
       .stApp {
-        background: radial-gradient(circle at 15% 10%, #121c33 0%, #07090e 58%, #05070b 100%);
+        background: radial-gradient(circle at 18% 10%, #2a1042 0%, #140724 55%, #0b0314 100%) !important;
         color: #f8fafc;
       }
 
-      /* إزالة الحشوات الزائدة لجعله أقرب لملء الشاشة */
       .block-container {
         padding-top: 0.65rem !important;
         padding-bottom: 0.75rem !important;
@@ -75,19 +76,18 @@ st.markdown(
         height: 2.2rem !important;
       }
 
-      /* شريط علوي أنيق للواجهة الرسومية */
       .radar-topbar {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 12px;
         flex-wrap: wrap;
-        background: linear-gradient(135deg, rgba(14, 19, 34, 0.95), rgba(19, 31, 54, 0.92));
-        border: 1px solid rgba(253, 230, 138, 0.24);
+        background: linear-gradient(135deg, rgba(34, 12, 58, 0.95), rgba(20, 7, 36, 0.95));
+        border: 1px solid rgba(253, 230, 138, 0.28);
         border-radius: 14px;
         padding: 10px 16px;
         margin-bottom: 10px;
-        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
       }
 
       .radar-brand {
@@ -109,27 +109,26 @@ st.markdown(
         font-size: 1.05rem;
         font-weight: 800;
         color: #fde68a;
-        letter-spacing: 0.2px;
       }
 
       .radar-sub {
         margin: 0;
-        font-size: 0.8rem;
-        color: #94a3b8;
+        font-size: 0.82rem;
+        color: #d8b4fe;
+        font-weight: 600;
       }
 
       .radar-badge {
-        background: rgba(2, 132, 199, 0.18);
-        border: 1px solid rgba(56, 189, 248, 0.35);
-        color: #bae6fd;
-        padding: 4px 10px;
+        background: rgba(126, 34, 206, 0.25);
+        border: 1px solid rgba(216, 180, 254, 0.4);
+        color: #f3e8ff;
+        padding: 4px 12px;
         border-radius: 999px;
         font-size: 0.78rem;
         font-weight: 700;
       }
 
-      /* أزرار التدرج الأزرق */
-      div.stButton > button, div.stDownloadButton > button {
+      div.stButton > button {
         background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
         color: #ffffff !important;
         border: 1px solid rgba(125, 211, 252, 0.35) !important;
@@ -141,19 +140,41 @@ st.markdown(
         box-shadow: 0 4px 14px rgba(2, 132, 199, 0.28) !important;
       }
 
-      div.stButton > button:hover, div.stDownloadButton > button:hover {
+      div.stButton > button:hover {
         transform: translateY(-1px);
         background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
         border-color: #fde68a !important;
       }
 
-      /* إطار عرض صفحة HTML */
+      /* تنسيق أزرار اختيار الجهاز (مبايل - كمبيوتر - تابلت) */
+      div[data-testid="stRadio"] > div {
+        background: rgba(34, 12, 58, 0.75);
+        border: 1px solid rgba(216, 180, 254, 0.25);
+        border-radius: 12px;
+        padding: 4px 10px;
+        gap: 10px;
+      }
+
+      div[data-testid="stRadio"] label p {
+        color: #f3e8ff !important;
+        font-weight: 700 !important;
+        font-family: 'Cairo', 'Tajawal', sans-serif !important;
+      }
+
+      .astro-frame-outer {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin-top: 6px;
+      }
+
       .astro-frame-wrap {
-        background: #0e1322;
-        border: 1px solid rgba(253, 230, 138, 0.22);
+        background: #1b0930;
+        border: 1px solid rgba(253, 230, 138, 0.25);
         border-radius: 16px;
         padding: 6px;
-        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.65);
+        transition: all 0.25s ease;
       }
 
       iframe {
@@ -165,71 +186,52 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# الشريط العلوي للواجهة
 st.markdown(
-    f"""
+    """
     <div class="radar-topbar">
       <div class="radar-brand">
         <span class="radar-dot"></span>
         <div>
-          <p class="radar-title">اسأل استرو رادار — عارض الشاشة الكاملة</p>
-          <p class="radar-sub">عرض مباشر ومستقل لملف {HTML_FILENAME}</p>
+          <p class="radar-title">اسأل استرو رادار</p>
+          <p class="radar-sub">تصميم الفلكي استرو رادار</p>
         </div>
       </div>
-      <span class="radar-badge">وضع العرض الكامل نشط</span>
+      <span class="radar-badge">شاشة كاملة</span>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-# شريط أدوات خفيف ومباشر
-col_a, col_b, col_c, col_d = st.columns([1.3, 1.3, 1.4, 2.0])
+col_mode, col_refresh = st.columns([4.2, 1.2])
 
-with col_a:
+with col_mode:
+    selected_device = st.radio(
+        "وضع العرض",
+        options=["مبايل", "كمبيوتر", "تابلت"],
+        index=["مبايل", "كمبيوتر", "تابلت"].index(st.session_state.device_mode),
+        horizontal=True,
+        label_visibility="collapsed",
+    )
+    st.session_state.device_mode = selected_device
+
+with col_refresh:
     if st.button("🔄 تحديث العرض", use_container_width=True):
         st.session_state.reload_nonce += 1
         st.rerun()
 
-with col_b:
-    height_choice = st.selectbox(
-        "ارتفاع الإطار",
-        options=[950, 1150, 1450, 1800],
-        index=[950, 1150, 1450, 1800].index(st.session_state.viewer_height)
-        if st.session_state.viewer_height in [950, 1150, 1450, 1800]
-        else 1,
-        label_visibility="collapsed",
-    )
-    st.session_state.viewer_height = height_choice
-
-with col_c:
-    if html_content:
-        st.download_button(
-            label="⬇️ تحميل HTML",
-            data=html_content.encode("utf-8"),
-            file_name=HTML_FILENAME,
-            mime="text/html",
-            use_container_width=True,
-        )
-
-with col_d:
-    if html_content:
-        st.caption(f"المصدر: `{Path(resolved_path).name}` ({len(html_content):,} حرف)")
-
 if html_content is None:
-    st.error(
-        f"لم يتم العثور على الملف `{HTML_FILENAME}` بجانب `app.py` في مجلد المشروع. "
-        "يرجى رفع الملفين معاً في نفس المجلد أو مستودع GitHub."
-    )
+    st.error("تعذر العثور على مصدر العرض في مجلد التطبيق الحالي. يرجى التأكد من وجوده بجانب ملف التشغيل.")
     st.stop()
 
-# تضمين الملف المرفق مع ضبط تلقائي لارتفاع الإطار حسب محتوى الصفحة الداخلية
-# وإضافة مفتاح ديناميكي (reload_nonce) لإعادة التحميل عند الطلب
+profile = DEVICE_PROFILES[st.session_state.device_mode]
+min_h = profile["height"]
+
 cache_buster = f"<!-- nonce: {st.session_state.reload_nonce} -->"
-auto_resize_script = """
+auto_resize_script = f"""
 <script>
-(function() {
-  function syncHeight() {
-    try {
+(function() {{
+  function syncHeight() {{
+    try {{
       const frame = window.frameElement;
       if (!frame) return;
       const doc = document.documentElement;
@@ -237,25 +239,25 @@ auto_resize_script = """
       const contentHeight = Math.max(
         body ? body.scrollHeight : 0,
         doc ? doc.scrollHeight : 0,
-        """ + str(st.session_state.viewer_height) + """
+        {min_h}
       );
       frame.style.height = (contentHeight + 36) + "px";
-    } catch (e) {}
-  }
-  window.addEventListener("load", () => {
+    }} catch (e) {{}}
+  }}
+  window.addEventListener("load", () => {{
     syncHeight();
     setTimeout(syncHeight, 250);
     setTimeout(syncHeight, 800);
-  });
-  window.addEventListener("click", () => {
+  }});
+  window.addEventListener("click", () => {{
     setTimeout(syncHeight, 120);
     setTimeout(syncHeight, 450);
-  });
-  if (typeof ResizeObserver !== "undefined") {
+  }});
+  if (typeof ResizeObserver !== "undefined") {{
     const ro = new ResizeObserver(syncHeight);
     ro.observe(document.documentElement);
-  }
-})();
+  }}
+}})();
 </script>
 """
 
@@ -264,10 +266,24 @@ if "</body>" in html_content:
 else:
     embedded_html = html_content + "\n" + auto_resize_script + "\n" + cache_buster
 
-st.markdown('<div class="astro-frame-wrap">', unsafe_allow_html=True)
+st.markdown(
+    f"""
+    <div class="astro-frame-outer">
+      <div class="astro-frame-wrap" style="width: {profile['width']}; max-width: 100%;">
+    """,
+    unsafe_allow_html=True,
+)
+
 components.html(
     embedded_html,
-    height=st.session_state.viewer_height,
+    height=profile["height"],
     scrolling=True,
 )
-st.markdown("</div>", unsafe_allow_html=True)
+
+st.markdown(
+    """
+      </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
